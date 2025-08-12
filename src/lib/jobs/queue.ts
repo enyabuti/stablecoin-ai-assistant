@@ -6,31 +6,36 @@ import { env } from "@/lib/env";
 let connection: IORedis | null = null;
 let isRedisAvailable = false;
 
-try {
-  connection = new IORedis(env.REDIS_URL, {
-    maxRetriesPerRequest: 1,
-    connectTimeout: 5000,
-    lazyConnect: true,
-  });
+// Skip Redis initialization during build time
+if (process.env.NEXT_PHASE !== 'phase-production-build') {
+  try {
+    connection = new IORedis(env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 5000,
+      lazyConnect: true,
+    });
 
-  connection.on('connect', () => {
-    console.log('Redis connected successfully');
-    isRedisAvailable = true;
-  });
+    connection.on('connect', () => {
+      console.log('Redis connected successfully');
+      isRedisAvailable = true;
+    });
 
-  connection.on('error', (error) => {
-    console.warn('Redis connection error:', error.message);
+    connection.on('error', (error) => {
+      console.warn('Redis connection error:', error.message);
+      isRedisAvailable = false;
+    });
+
+    connection.on('close', () => {
+      console.warn('Redis connection closed');
+      isRedisAvailable = false;
+    });
+  } catch (error) {
+    console.warn('Failed to initialize Redis connection:', error);
+    connection = null;
     isRedisAvailable = false;
-  });
-
-  connection.on('close', () => {
-    console.warn('Redis connection closed');
-    isRedisAvailable = false;
-  });
-} catch (error) {
-  console.warn('Failed to initialize Redis connection:', error);
-  connection = null;
-  isRedisAvailable = false;
+  }
+} else {
+  console.warn('Skipping Redis initialization during build');
 }
 
 export interface ExecuteRuleJob {

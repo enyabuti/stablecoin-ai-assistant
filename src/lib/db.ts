@@ -21,6 +21,13 @@ export const db = globalForPrisma.prisma ?? new PrismaClient({
 
 // Monitor connection health
 async function checkDatabaseHealth() {
+  // Skip database health checks during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
+    console.warn('Skipping database health check during build');
+    isDatabaseHealthy = false;
+    return false;
+  }
+
   try {
     await db.$queryRaw`SELECT 1`;
     isDatabaseHealthy = true;
