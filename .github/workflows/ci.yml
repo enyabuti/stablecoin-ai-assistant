@@ -90,9 +90,9 @@ jobs:
         REDIS_URL: redis://localhost:6379
 
   deploy:
-    needs: test
+    # needs: test  # Temporarily disabled due to billing issues
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && false  # Disabled
     
     steps:
     - uses: actions/checkout@v4

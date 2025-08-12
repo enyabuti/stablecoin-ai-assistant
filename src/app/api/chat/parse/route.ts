@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { MockLLMProvider, OpenAIProvider } from "@/lib/llm/parser";
 import { env } from "@/lib/env";
 
-const llmProvider = env.OPENAI_API_KEY 
-  ? new OpenAIProvider(env.OPENAI_API_KEY)
-  : new MockLLMProvider();
+// Lazy initialization to avoid env validation during build
+function getLLMProvider() {
+  return env.OPENAI_API_KEY 
+    ? new OpenAIProvider(env.OPENAI_API_KEY)
+    : new MockLLMProvider();
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    const llmProvider = getLLMProvider();
     const result = await llmProvider.parseRule(message);
     
     if ("error" in result) {
