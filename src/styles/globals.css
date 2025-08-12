@@ -1,0 +1,229 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 252 27% 9%; /* Deep purple-navy #0F0F23 */
+    --foreground: 280 5% 84%;
+
+    --card: 252 96% 52% / 0.05; /* Subtle purple tint */
+    --card-foreground: 280 5% 84%;
+
+    --popover: 252 96% 52% / 0.08;
+    --popover-foreground: 280 5% 84%;
+
+    --primary: 252 96% 67%; /* Purple #8B5CF6 */
+    --primary-foreground: 252 13% 94%;
+
+    --secondary: 252 96% 52% / 0.1; /* More purple */
+    --secondary-foreground: 280 5% 84%;
+
+    --muted: 252 96% 52% / 0.08;
+    --muted-foreground: 280 5% 65%;
+
+    --accent: 188 94% 43%; /* Teal #06B6D4 */
+    --accent-foreground: 188 13% 94%;
+
+    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive-foreground: 252 13% 94%;
+
+    --border: 252 96% 52% / 0.12;
+    --input: 252 96% 52% / 0.08;
+    --ring: 252 96% 67%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    /* GPT-5 Style Pastel Gradient Background - Fixed and Full Viewport */
+    background: radial-gradient(ellipse at top left, #F9D9D0 0%, #FCE3B0 20%, #F9C8D0 35%, #E1D4F5 55%, #C9D9F7 75%, #F4D0B0 100%);
+    background-attachment: fixed;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+  }
+  
+  body {
+    @apply text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background: transparent; /* Let the html background show through */
+    min-height: 100vh;
+  }
+  
+  /* Enhanced text legibility on pastel background */
+  .text-contrast-enhanced {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #1f2937; /* Dark gray for better contrast */
+  }
+  
+  /* Global text contrast improvements - more aggressive */
+  h1, h2, h3, h4, h5, h6,
+  .text-3xl, .text-2xl, .text-xl, .text-lg {
+    color: #0f172a !important; /* Very dark slate for maximum contrast */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 700 !important;
+  }
+  
+  p, span, div, label, .text-sm, .text-xs {
+    color: #1e293b !important; /* Dark slate for body text */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Muted text improvements - much darker */
+  .text-muted-foreground {
+    color: #475569 !important; /* Much darker muted text */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Button and link text contrast */
+  button {
+    text-shadow: none; /* Keep buttons clean */
+  }
+  
+  button:not(.bg-transparent):not(.bg-opacity-0) {
+    color: #111827; /* Dark text for solid buttons */
+  }
+  
+  a {
+    color: #374151; /* Medium gray for links */
+  }
+  
+  /* Table and data text - much darker */
+  table td, table th {
+    color: #1e293b !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Card content text - maximum contrast */
+  .glass-card h1, .glass-card h2, .glass-card h3, .glass-card h4, .glass-card h5, .glass-card h6,
+  .glass-card .text-3xl, .glass-card .text-2xl, .glass-card .text-xl, .glass-card .text-lg {
+    color: #0f172a !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    font-weight: 700 !important;
+  }
+  
+  .glass-card p, .glass-card span, .glass-card div:not(.bg-success):not(.bg-danger):not(.bg-warning),
+  .glass-card .text-sm, .glass-card .text-xs {
+    color: #1e293b !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Input and form text - maximum contrast */
+  input, textarea, select {
+    color: #0f172a !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: none;
+  }
+  
+  input::placeholder, textarea::placeholder {
+    color: #475569 !important;
+  }
+  
+  /* Badge text improvements */
+  .badge {
+    text-shadow: none;
+  }
+  
+  /* Navigation and sidebar text */
+  nav a, .sidebar-enhanced a {
+    color: #e5e7eb !important; /* Light gray for dark sidebar */
+  }
+  
+  /* Status indicators */
+  .text-success {
+    color: #059669 !important; /* Darker green */
+  }
+  
+  .text-danger {
+    color: #dc2626 !important; /* Darker red */
+  }
+  
+  .text-warning {
+    color: #d97706 !important; /* Darker amber */
+  }
+  
+  /* Override Tailwind text color utilities for maximum contrast */
+  .text-foreground {
+    color: #0f172a !important;
+  }
+  
+  /* Override specific Tailwind classes that might be causing light text */
+  * {
+    --tw-text-opacity: 1 !important;
+  }
+  
+  /* Force all text elements to be dark on the main content area */
+  main * {
+    color: #1e293b !important;
+  }
+  
+  main h1, main h2, main h3, main h4, main h5, main h6,
+  main .text-3xl, main .text-2xl, main .text-xl, main .text-lg {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  
+  main .text-muted-foreground {
+    color: #475569 !important;
+  }
+}
+
+@layer components {
+  /* Enhanced glass cards for pastel background - higher opacity for better text contrast */
+  .glass-card {
+    @apply backdrop-blur-lg border;
+    background: rgba(255, 255, 255, 0.4) !important; /* Higher opacity for better text readability */
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.12),
+      0 4px 16px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Subtle overlay gradient that works with pastel background */
+  .gradient-bg {
+    background: transparent; /* Let the main gradient show through */
+  }
+  
+  /* Keep the hero gradient for branding elements */
+  .hero-gradient {
+    background: linear-gradient(135deg,
+      #8B5CF6 0%,
+      #A855F7 25%,
+      #06B6D4 75%,
+      #0891B2 100%
+    );
+  }
+  
+  .accent-gradient {
+    background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+  }
+  
+  /* Enhanced sidebar with better contrast on pastel background */
+  .sidebar-enhanced {
+    background: rgba(15, 15, 35, 0.85);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Responsive gradient adjustments */
+  @media (max-width: 768px) {
+    html {
+      background-size: 150% 150%; /* Slightly larger on mobile for better coverage */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    html {
+      background-size: 200% 200%; /* Even larger on small screens */
+    }
+  }
+}
