@@ -2,6 +2,22 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    // Skip service checks during build time
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return NextResponse.json({
+        status: "build-time",
+        timestamp: new Date().toISOString(),
+        services: {
+          database: "build-skipped",
+          redis: "build-skipped", 
+          queue: "build-skipped",
+          api: "healthy"
+        },
+        version: process.env.npm_package_version || "unknown",
+        environment: process.env.NODE_ENV || "development"
+      });
+    }
+
     const checks = {
       status: "healthy",
       timestamp: new Date().toISOString(),
