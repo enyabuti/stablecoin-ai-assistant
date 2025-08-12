@@ -11,11 +11,9 @@ import type { RuleJSON } from "@/lib/llm/schema";
 const router = createRouter();
 const circleClient = new MockCircleClient();
 
-// Execute Rule Worker
-export const executeRuleWorker = new Worker<ExecuteRuleJob>(
-  "execute-rule",
-  async (job: Job<ExecuteRuleJob>) => {
-    const { ruleId, userId, idempotencyKey, triggeredBy } = job.data;
+// Extracted job processing logic for fallback execution
+export async function processExecuteRuleJob(data: ExecuteRuleJob) {
+  const { ruleId, userId, idempotencyKey, triggeredBy } = data;
     
     try {
       // Check if execution already exists (idempotency)
@@ -147,12 +145,19 @@ export const executeRuleWorker = new Worker<ExecuteRuleJob>(
       
       throw error;
     }
+}
+
+// Execute Rule Worker (only create if connection exists)
+export const executeRuleWorker = connection ? new Worker<ExecuteRuleJob>(
+  "execute-rule",
+  async (job: Job<ExecuteRuleJob>) => {
+    return await processExecuteRuleJob(job.data);
   },
   { connection }
-);
+) : null;
 
-// Condition Check Worker
-export const conditionCheckWorker = new Worker<CheckConditionsJob>(
+// Condition Check Worker (only create if connection exists)
+export const conditionCheckWorker = connection ? new Worker<CheckConditionsJob>(
   "condition-check",
   async (job: Job<CheckConditionsJob>) => {
     const { timestamp } = job.data;
@@ -199,7 +204,7 @@ export const conditionCheckWorker = new Worker<CheckConditionsJob>(
     };
   },
   { connection }
-);
+) : null;
 
 async function checkCondition(condition: RuleJSON["condition"]): Promise<boolean> {
   if (!condition) return false;
@@ -224,17 +229,25 @@ async function checkCondition(condition: RuleJSON["condition"]): Promise<boolean
 export function startWorkers() {
   console.log("Starting job workers...");
   
-  executeRuleWorker.on("completed", (job) => {
-    console.log(`Execute rule job ${job.id} completed:`, job.returnvalue);
-  });
+  if (executeRuleWorker) {
+    executeRuleWorker.on("completed", (job) => {
+      console.log(`Execute rule job ${job.id} completed:`, job.returnvalue);
+    });
+    
+    executeRuleWorker.on("failed", (job, err) => {
+      console.error(`Execute rule job ${job?.id} failed:`, err);
+    });
+  }
   
-  executeRuleWorker.on("failed", (job, err) => {
-    console.error(`Execute rule job ${job?.id} failed:`, err);
-  });
+  if (conditionCheckWorker) {
+    conditionCheckWorker.on("completed", (job) => {
+      console.log(`Condition check completed:`, job.returnvalue);
+    });
+  }
   
-  conditionCheckWorker.on("completed", (job) => {
-    console.log(`Condition check completed:`, job.returnvalue);
-  });
+  if (!executeRuleWorker || !conditionCheckWorker) {
+    console.warn("Some workers could not be started due to Redis unavailability");
+  }
   
   return { executeRuleWorker, conditionCheckWorker };
 }

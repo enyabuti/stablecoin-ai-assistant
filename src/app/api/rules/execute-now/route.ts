@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { addExecuteRuleJob } from "@/lib/jobs/queue";
+import { db, safeDbOperation, isDatabaseConnected } from "@/lib/db";
+import { addExecuteRuleJob, getQueueStatus } from "@/lib/jobs/queue";
 import { nanoid } from "nanoid";
 
 export async function POST(request: NextRequest) {
@@ -13,11 +13,36 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Check if critical services are available
+    if (!isDatabaseConnected()) {
+      return NextResponse.json(
+        { 
+          error: "Service temporarily unavailable",
+          details: "Database connection is down. Please try again later.",
+          fallback: true
+        },
+        { status: 503 }
+      );
+    }
     
-    // Verify rule exists and is active
-    const rule = await db.rule.findUnique({
-      where: { id: ruleId },
-    });
+    // Verify rule exists and is active with graceful fallback
+    const rule = await safeDbOperation(
+      () => db.rule.findUnique({ where: { id: ruleId } }),
+      null,
+      'rule lookup'
+    );
+    
+    if (rule === null) {
+      return NextResponse.json(
+        { 
+          error: "Service temporarily unavailable",
+          details: "Unable to verify rule status. Please try again later.",
+          fallback: true
+        },
+        { status: 503 }
+      );
+    }
     
     if (!rule) {
       return NextResponse.json(
@@ -36,7 +61,10 @@ export async function POST(request: NextRequest) {
     // Generate idempotency key
     const idempotencyKey = `manual-${ruleId}-${Date.now()}-${nanoid(8)}`;
     
-    // Add to execution queue
+    // Check queue status and inform user about execution mode
+    const queueStatus = getQueueStatus();
+    
+    // Add to execution queue (will fall back to immediate execution if Redis unavailable)
     const job = await addExecuteRuleJob({
       ruleId: rule.id,
       userId: rule.userId,
@@ -48,12 +76,20 @@ export async function POST(request: NextRequest) {
       success: true,
       jobId: job.id,
       idempotencyKey,
+      executionMode: queueStatus.fallbackMode ? "immediate" : "queued",
+      fallback: queueStatus.fallbackMode,
+      ...(queueStatus.fallbackMode && {
+        note: "Queue service unavailable, rule executed immediately"
+      })
     });
     
   } catch (error) {
     console.error("Execute now error:", error);
     return NextResponse.json(
-      { error: "Failed to execute rule" },
+      { 
+        error: "Failed to execute rule",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     );
   }

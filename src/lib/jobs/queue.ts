@@ -2,9 +2,36 @@ import { Queue } from "bullmq";
 import IORedis from "ioredis";
 import { env } from "@/lib/env";
 
-const connection = new IORedis(env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-});
+// Graceful Redis connection with fallback handling
+let connection: IORedis | null = null;
+let isRedisAvailable = false;
+
+try {
+  connection = new IORedis(env.REDIS_URL, {
+    maxRetriesPerRequest: 1,
+    connectTimeout: 5000,
+    lazyConnect: true,
+  });
+
+  connection.on('connect', () => {
+    console.log('Redis connected successfully');
+    isRedisAvailable = true;
+  });
+
+  connection.on('error', (error) => {
+    console.warn('Redis connection error:', error.message);
+    isRedisAvailable = false;
+  });
+
+  connection.on('close', () => {
+    console.warn('Redis connection closed');
+    isRedisAvailable = false;
+  });
+} catch (error) {
+  console.warn('Failed to initialize Redis connection:', error);
+  connection = null;
+  isRedisAvailable = false;
+}
 
 export interface ExecuteRuleJob {
   ruleId: string;
@@ -17,43 +44,105 @@ export interface CheckConditionsJob {
   timestamp: string;
 }
 
-// Job queues
-export const executeRuleQueue = new Queue<ExecuteRuleJob>("execute-rule", {
-  connection,
-  defaultJobOptions: {
-    removeOnComplete: 100,
-    removeOnFail: 50,
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 2000,
-    },
-  },
-});
+// In-memory fallback storage for when Redis is unavailable
+const inMemoryJobs = new Map<string, ExecuteRuleJob>();
 
-export const conditionCheckQueue = new Queue<CheckConditionsJob>("condition-check", {
-  connection,
-  defaultJobOptions: {
-    removeOnComplete: 10,
-    removeOnFail: 5,
-  },
-});
+// Job queues with graceful fallback
+let executeRuleQueue: Queue<ExecuteRuleJob> | null = null;
+let conditionCheckQueue: Queue<CheckConditionsJob> | null = null;
 
-// Helper functions
+if (connection) {
+  try {
+    executeRuleQueue = new Queue<ExecuteRuleJob>("execute-rule", {
+      connection,
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 50,
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
+      },
+    });
+
+    conditionCheckQueue = new Queue<CheckConditionsJob>("condition-check", {
+      connection,
+      defaultJobOptions: {
+        removeOnComplete: 10,
+        removeOnFail: 5,
+      },
+    });
+  } catch (error) {
+    console.warn('Failed to initialize job queues:', error);
+    executeRuleQueue = null;
+    conditionCheckQueue = null;
+  }
+}
+
+// Helper functions with graceful fallback
 export async function addExecuteRuleJob(data: ExecuteRuleJob) {
-  return await executeRuleQueue.add("execute-rule", data, {
-    jobId: data.idempotencyKey, // Prevent duplicates
-  });
+  if (executeRuleQueue && isRedisAvailable) {
+    try {
+      return await executeRuleQueue.add("execute-rule", data, {
+        jobId: data.idempotencyKey, // Prevent duplicates
+      });
+    } catch (error) {
+      console.warn('Failed to add job to Redis queue, falling back to in-memory storage:', error);
+      isRedisAvailable = false;
+    }
+  }
+  
+  // Fallback: store in memory and process immediately
+  console.log('Redis unavailable, processing job immediately:', data.idempotencyKey);
+  inMemoryJobs.set(data.idempotencyKey, data);
+  
+  // Import and execute the job processor directly
+  try {
+    const { processExecuteRuleJob } = await import('@/lib/jobs/worker');
+    await processExecuteRuleJob(data);
+  } catch (error) {
+    console.error('Failed to process job directly:', error);
+    throw error;
+  }
+  
+  return { id: data.idempotencyKey, data };
 }
 
 export async function addConditionCheckJob() {
-  return await conditionCheckQueue.add("condition-check", {
-    timestamp: new Date().toISOString(),
-  }, {
-    repeat: {
-      pattern: "*/5 * * * *", // Every 5 minutes
-    },
-  });
+  if (conditionCheckQueue && isRedisAvailable) {
+    try {
+      return await conditionCheckQueue.add("condition-check", {
+        timestamp: new Date().toISOString(),
+      }, {
+        repeat: {
+          pattern: "*/5 * * * *", // Every 5 minutes
+        },
+      });
+    } catch (error) {
+      console.warn('Failed to add condition check job to Redis queue:', error);
+      isRedisAvailable = false;
+    }
+  }
+  
+  // Fallback: log that periodic checks are disabled
+  console.warn('Redis unavailable, periodic condition checks disabled');
+  return null;
+}
+
+// Health check function
+export function isQueueHealthy() {
+  return isRedisAvailable && connection !== null;
+}
+
+// Get queue status for monitoring
+export function getQueueStatus() {
+  return {
+    redis: isRedisAvailable,
+    connection: connection !== null,
+    inMemoryJobs: inMemoryJobs.size,
+    fallbackMode: !isRedisAvailable
+  };
 }
 
 export { connection };

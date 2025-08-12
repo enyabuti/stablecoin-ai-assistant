@@ -25,8 +25,12 @@ async function main() {
     console.log('\n🛑 Shutting down workers...');
     
     cronScheduler.stop();
-    workers.executeRuleWorker.close();
-    workers.conditionCheckWorker.close();
+    if (workers.executeRuleWorker) {
+      workers.executeRuleWorker.close();
+    }
+    if (workers.conditionCheckWorker) {
+      workers.conditionCheckWorker.close();
+    }
     
     console.log('✅ Workers shut down gracefully');
     process.exit(0);
@@ -36,8 +40,12 @@ async function main() {
     console.log('\n🛑 SIGTERM received, shutting down workers...');
     
     cronScheduler.stop();
-    workers.executeRuleWorker.close();
-    workers.conditionCheckWorker.close();
+    if (workers.executeRuleWorker) {
+      workers.executeRuleWorker.close();
+    }
+    if (workers.conditionCheckWorker) {
+      workers.conditionCheckWorker.close();
+    }
     
     process.exit(0);
   });
