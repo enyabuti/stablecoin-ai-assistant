@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:workers": "tsx src/lib/jobs/start-workers.ts",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:workers\"",
-    "build": "next build",
+    "build": "echo 'Starting build...' && NEXT_PHASE=phase-production-build next build",
     "start": "next start",
     "start:workers": "tsx src/lib/jobs/start-workers.ts",
     "lint": "next lint",
