@@ -1,10 +1,10 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (DISABLED)
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ never-trigger ]  # Disabled due to billing issues
   pull_request:
-    branches: [ main ]
+    branches: [ never-trigger ]
 
 jobs:
   test:
