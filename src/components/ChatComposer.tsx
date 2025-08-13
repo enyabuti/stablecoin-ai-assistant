@@ -109,19 +109,15 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
       {/* Suggestions */}
       <div className="mt-3 flex flex-wrap gap-2">
         {[
-          "Check my balance",
-          "Send $100 USDC",
-          "Create a new rule",
-          "Show recent transfers"
+          "Send $50 USDC to John every Friday",
+          "Send €200 EURC when EUR rises 2%", 
+          "Transfer $100 to Alice monthly",
+          "Send $25 USDC to Mom weekly"
         ].map((suggestion, index) => (
           <button
             key={index}
             onClick={() => setInput(suggestion)}
-            className={`px-3 py-1.5 text-xs rounded-full smooth-transition border ${
-              suggestion.includes('rule') 
-                ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 hover:text-primary font-medium' 
-                : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground border-border'
-            }`}
+            className="px-3 py-1.5 text-xs rounded-full smooth-transition border bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 hover:text-primary font-medium"
           >
             {suggestion}
           </button>

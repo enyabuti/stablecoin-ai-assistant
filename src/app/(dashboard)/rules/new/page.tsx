@@ -114,15 +114,59 @@ export default function NewRulePage() {
         <div className="space-y-6">
           {parsedRule && (
             <>
-              {/* Rule JSON Preview */}
-              <Card className="glass-card">
+              {/* Rule Preview */}
+              <Card className="glass-card border-success/20">
                 <CardHeader>
-                  <CardTitle>Parsed Rule</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-success">
+                    <Sparkles className="w-5 h-5" />
+                    Rule Parsed Successfully
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <pre className="text-xs bg-bg-elevated rounded-xl p-4 overflow-x-auto">
-                    {JSON.stringify(parsedRule, null, 2)}
-                  </pre>
+                <CardContent className="space-y-4">
+                  {/* Human-readable summary */}
+                  <div className="p-4 bg-success/10 rounded-xl border border-success/20">
+                    <h4 className="font-semibold text-success mb-2">Rule Summary</h4>
+                    <p className="text-card-foreground">
+                      {parsedRule.description || `${parsedRule.type} rule for ${parsedRule.asset}`}
+                    </p>
+                  </div>
+                  
+                  {/* Rule details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Type:</span>
+                      <span className="ml-2 font-medium capitalize">{parsedRule.type}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Asset:</span>
+                      <span className="ml-2 font-medium">{parsedRule.asset}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Amount:</span>
+                      <span className="ml-2 font-medium">
+                        {parsedRule.amount.currency === "EUR" ? "€" : "$"}{parsedRule.amount.value}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Destination:</span>
+                      <span className="ml-2 font-medium">
+                        {parsedRule.destination.type === "address" 
+                          ? `${parsedRule.destination.value.slice(0, 6)}...${parsedRule.destination.value.slice(-4)}`
+                          : parsedRule.destination.value
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* JSON Preview (collapsible) */}
+                  <details className="mt-4">
+                    <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                      View raw JSON
+                    </summary>
+                    <pre className="text-xs bg-bg-elevated rounded-xl p-4 overflow-x-auto mt-2">
+                      {JSON.stringify(parsedRule, null, 2)}
+                    </pre>
+                  </details>
                 </CardContent>
               </Card>
 

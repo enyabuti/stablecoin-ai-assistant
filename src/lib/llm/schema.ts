@@ -5,6 +5,7 @@ export type Chain = z.infer<typeof ChainSchema>;
 
 export const RuleJSONSchema = z.object({
   type: z.enum(["schedule", "conditional"]),
+  description: z.string().optional(),
   asset: z.enum(["USDC", "EURC"]),
   amount: z.object({
     type: z.literal("fixed"),

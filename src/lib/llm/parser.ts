@@ -8,101 +8,202 @@ export interface LLMProvider {
 
 export class MockLLMProvider implements LLMProvider {
   async parseRule(input: string): Promise<RuleJSON | { error: string; needsClarification?: string }> {
-    // Simple pattern matching for demo - replace with actual LLM calls
+    // Enhanced pattern matching for demo mode
     const lowerInput = input.toLowerCase();
+    const originalInput = input.trim();
     
-    // Check for common patterns
-    if (lowerInput.includes("send") && lowerInput.includes("every")) {
-      // Schedule rule
-      const amountMatch = input.match(/\$(\d+)/);
-      const asset = lowerInput.includes("eurc") ? "EURC" : "USDC";
-      const contactMatch = input.match(/to (\w+)/i);
-      
-      if (!amountMatch || !contactMatch) {
-        return {
-          error: "Could not parse amount or recipient",
-          needsClarification: "Please specify the amount and recipient clearly, e.g., 'Send $50 USDC to John'"
-        };
-      }
-      
-      return {
-        type: "schedule",
-        asset,
-        amount: {
-          type: "fixed",
-          value: parseInt(amountMatch[1]),
-          currency: asset === "EURC" ? "EUR" : "USD",
-        },
-        destination: {
-          type: "contact",
-          value: contactMatch[1],
-        },
-        schedule: {
-          cron: "0 8 * * FRI", // Default to Friday 8am
-          tz: "America/New_York",
-        },
-        routing: {
-          mode: "cheapest",
-          allowedChains: ["base", "arbitrum", "polygon", "ethereum"],
-        },
-        limits: {
-          dailyMaxUSD: 200,
-          requireConfirmOverUSD: 500,
-        },
-      };
+    // Enhanced pattern matching for schedule rules
+    if (lowerInput.includes("send") && (lowerInput.includes("every") || lowerInput.includes("daily") || lowerInput.includes("weekly") || lowerInput.includes("monthly"))) {
+      return this.parseScheduleRule(originalInput, lowerInput);
     }
     
-    if (lowerInput.includes("when") && lowerInput.includes("eur")) {
-      // Conditional rule
-      const amountMatch = input.match(/[\$€](\d+)/);
-      const addressMatch = input.match(/0x[a-fA-F0-9]{4,}/);
-      
-      if (!amountMatch) {
-        return {
-          error: "Could not parse amount",
-          needsClarification: "Please specify the amount clearly"
-        };
-      }
-      
-      if (!addressMatch) {
-        return {
-          error: "Missing destination",
-          needsClarification: "What destination address should I send the funds to?"
-        };
-      }
-      
-      return {
-        type: "conditional",
-        asset: "EURC",
-        amount: {
-          type: "fixed",
-          value: parseInt(amountMatch[1]),
-          currency: "EUR",
-        },
-        destination: {
-          type: "address", 
-          value: addressMatch[0],
-        },
-        condition: {
-          metric: "EURUSD",
-          change: "+%",
-          magnitude: 2,
-          window: "24h",
-        },
-        routing: {
-          mode: "cheapest",
-          allowedChains: ["base", "arbitrum", "polygon", "ethereum"],
-        },
-        limits: {
-          dailyMaxUSD: 1000,
-          requireConfirmOverUSD: 500,
-        },
-      };
+    // Enhanced pattern matching for conditional rules
+    if (lowerInput.includes("when") || lowerInput.includes("if")) {
+      return this.parseConditionalRule(originalInput, lowerInput);
     }
     
     return {
       error: "Could not parse rule",
       needsClarification: "Please describe what you want to do, for example: 'Send $50 USDC to John every Friday' or 'Send €200 to 0x123... when EUR rises 2%'"
+    };
+  }
+
+  private parseScheduleRule(input: string, lowerInput: string): RuleJSON | { error: string; needsClarification?: string } {
+    // Extract amount and currency
+    const amountMatch = input.match(/[\$€](\d+(?:\.\d{2})?)/);
+    const euroMatch = input.match(/€(\d+)/);
+    const asset = euroMatch || lowerInput.includes("eurc") ? "EURC" : "USDC";
+    
+    if (!amountMatch) {
+      return {
+        error: "Could not parse amount",
+        needsClarification: "Please specify the amount clearly, e.g., '$50' or '€200'"
+      };
+    }
+
+    // Extract recipient 
+    const contactMatch = input.match(/to (\w+)/i);
+    const addressMatch = input.match(/(0x[a-fA-F0-9]{40})/);
+    
+    if (!contactMatch && !addressMatch) {
+      return {
+        error: "Could not parse recipient",
+        needsClarification: "Please specify who to send to, e.g., 'to John' or 'to 0x1234...'"
+      };
+    }
+
+    // Parse schedule frequency
+    let cron = "0 8 * * FRI"; // Default Friday 8am
+    let tz = "America/New_York";
+    
+    if (lowerInput.includes("monday")) cron = "0 8 * * MON";
+    else if (lowerInput.includes("tuesday")) cron = "0 8 * * TUE";
+    else if (lowerInput.includes("wednesday")) cron = "0 8 * * WED";
+    else if (lowerInput.includes("thursday")) cron = "0 8 * * THU";
+    else if (lowerInput.includes("friday")) cron = "0 8 * * FRI";
+    else if (lowerInput.includes("saturday")) cron = "0 8 * * SAT";
+    else if (lowerInput.includes("sunday")) cron = "0 8 * * SUN";
+    else if (lowerInput.includes("daily")) cron = "0 8 * * *";
+    else if (lowerInput.includes("weekly")) cron = "0 8 * * MON";
+    else if (lowerInput.includes("monthly")) cron = "0 8 1 * *";
+
+    // Parse time if specified
+    const timeMatch = input.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    if (timeMatch) {
+      let hour = parseInt(timeMatch[1]);
+      const minute = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+      const meridiem = timeMatch[3].toLowerCase();
+      
+      if (meridiem === "pm" && hour !== 12) hour += 12;
+      if (meridiem === "am" && hour === 12) hour = 0;
+      
+      cron = cron.replace(/^0/, minute.toString()).replace(/8/, hour.toString());
+    }
+
+    const amount = parseFloat(amountMatch[1]);
+    
+    // Generate user-friendly description
+    const frequency = lowerInput.includes("daily") ? "daily" :
+                     lowerInput.includes("weekly") ? "weekly" :
+                     lowerInput.includes("monthly") ? "monthly" :
+                     lowerInput.includes("monday") ? "every Monday" :
+                     lowerInput.includes("tuesday") ? "every Tuesday" :
+                     lowerInput.includes("wednesday") ? "every Wednesday" :
+                     lowerInput.includes("thursday") ? "every Thursday" :
+                     lowerInput.includes("friday") ? "every Friday" :
+                     lowerInput.includes("saturday") ? "every Saturday" :
+                     lowerInput.includes("sunday") ? "every Sunday" : "every Friday";
+    
+    const timeStr = timeMatch ? ` at ${timeMatch[1]}${timeMatch[2] ? ':' + timeMatch[2] : ''}${timeMatch[3]}` : " at 8:00am";
+    const recipient = addressMatch ? `to ${addressMatch[1].slice(0, 6)}...${addressMatch[1].slice(-4)}` : `to ${contactMatch![1]}`;
+    const description = `Send ${asset === "EURC" ? "€" : "$"}${amount} ${asset} ${recipient} ${frequency}${timeStr}`;
+    
+    return {
+      type: "schedule",
+      description,
+      asset,
+      amount: {
+        type: "fixed",
+        value: amount,
+        currency: asset === "EURC" ? "EUR" : "USD",
+      },
+      destination: {
+        type: addressMatch ? "address" : "contact",
+        value: addressMatch ? addressMatch[1] : contactMatch![1],
+      },
+      schedule: { cron, tz },
+      routing: {
+        mode: "cheapest",
+        allowedChains: ["base", "arbitrum", "polygon", "ethereum"],
+      },
+      limits: {
+        dailyMaxUSD: Math.max(200, amount * 2),
+        requireConfirmOverUSD: 500,
+      },
+    };
+  }
+
+  private parseConditionalRule(input: string, lowerInput: string): RuleJSON | { error: string; needsClarification?: string } {
+    // Extract amount and currency
+    const amountMatch = input.match(/[\$€](\d+(?:\.\d{2})?)/);
+    const euroMatch = input.match(/€(\d+)/);
+    
+    if (!amountMatch) {
+      return {
+        error: "Could not parse amount",
+        needsClarification: "Please specify the amount clearly, e.g., '$50' or '€200'"
+      };
+    }
+
+    // Extract recipient
+    const contactMatch = input.match(/to (\w+)/i);
+    const addressMatch = input.match(/(0x[a-fA-F0-9]{40})/);
+    
+    if (!contactMatch && !addressMatch) {
+      return {
+        error: "Missing destination",
+        needsClarification: "What destination address or contact should I send the funds to?"
+      };
+    }
+
+    // Parse condition - for now only support EUR/USD
+    if (!lowerInput.includes("eur")) {
+      return {
+        error: "Unsupported condition",
+        needsClarification: "Currently only EUR/USD price conditions are supported. Try: 'when EUR rises 2%'"
+      };
+    }
+
+    // Extract percentage change
+    const percentMatch = input.match(/(\d+(?:\.\d+)?)%/);
+    const magnitude = percentMatch ? parseFloat(percentMatch[1]) : 2;
+    
+    // Determine direction
+    const isIncrease = lowerInput.includes("rise") || lowerInput.includes("up") || lowerInput.includes("strengthen") || lowerInput.includes("goes up") || lowerInput.includes("increase");
+    const isDecrease = lowerInput.includes("fall") || lowerInput.includes("down") || lowerInput.includes("weaken") || lowerInput.includes("goes down") || lowerInput.includes("decrease");
+    
+    if (!isIncrease && !isDecrease) {
+      return {
+        error: "Could not parse condition direction",
+        needsClarification: "Please specify if EUR should 'rise' or 'fall', e.g., 'when EUR rises 2%'"
+      };
+    }
+
+    const amount = parseFloat(amountMatch[1]);
+    const asset = euroMatch || lowerInput.includes("eurc") ? "EURC" : "USDC";
+    
+    // Generate user-friendly description
+    const recipient = addressMatch ? `to ${addressMatch[1].slice(0, 6)}...${addressMatch[1].slice(-4)}` : `to ${contactMatch![1]}`;
+    const direction = isIncrease ? "rises" : "falls";
+    const description = `Send ${asset === "EURC" ? "€" : "$"}${amount} ${asset} ${recipient} when EUR ${direction} ${magnitude}%`;
+    
+    return {
+      type: "conditional",
+      description,
+      asset,
+      amount: {
+        type: "fixed", 
+        value: amount,
+        currency: asset === "EURC" ? "EUR" : "USD",
+      },
+      destination: {
+        type: addressMatch ? "address" : "contact",
+        value: addressMatch ? addressMatch[1] : contactMatch![1],
+      },
+      condition: {
+        metric: "EURUSD",
+        change: isIncrease ? "+%" : "-%",
+        magnitude,
+        window: "24h",
+      },
+      routing: {
+        mode: "cheapest",
+        allowedChains: ["base", "arbitrum", "polygon", "ethereum"],
+      },
+      limits: {
+        dailyMaxUSD: Math.max(1000, amount * 2),
+        requireConfirmOverUSD: 500,
+      },
     };
   }
 }

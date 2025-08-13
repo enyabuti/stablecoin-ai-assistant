@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { RuleJSONSchema } from "@/lib/llm/schema";
 import { createRouter } from "@/lib/routing/router";
@@ -9,8 +11,16 @@ const router = createRouter();
 // GET /api/rules - List all rules for user
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Get userId from session
-    const userId = "demo-user";
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    
+    const userId = session.user.id;
     
     const rules = await db.rule.findMany({
       where: { userId },
@@ -39,11 +49,19 @@ export async function GET(request: NextRequest) {
 // POST /api/rules - Create a new rule
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    
     const body = await request.json();
     const ruleJson = RuleJSONSchema.parse(body);
     
-    // TODO: Get userId from session
-    const userId = "demo-user";
+    const userId = session.user.id;
     
     // Create the rule
     const rule = await db.rule.create({
