@@ -448,3 +448,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Built with ❤️ using Next.js, TypeScript, and Circle's Programmable Wallets.
+
+## 🚀 Deployment Status
+
+**Live URL**: [https://stablecoin-ai.vercel.app](https://stablecoin-ai.vercel.app)
+
+### Vercel Project Rename (Optional)
+
+To rename the Vercel project from "stablecoin-ai" to "ferrow":
+
+```bash
+vercel project rename stablecoin-ai ferrow
+```
+
+This will update the project name in the Vercel dashboard and change future deployment URLs.
