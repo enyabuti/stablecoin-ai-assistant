@@ -59,6 +59,8 @@ export const RouteQuoteSchema = z.object({
   etaSeconds: z.number().positive(),
   explanation: z.string(),
   recommended: z.boolean().default(false),
+  feePercentage: z.number().optional(),
+  isHighFee: z.boolean().optional(),
 });
 
 export type RouteQuote = z.infer<typeof RouteQuoteSchema>;

@@ -12,18 +12,34 @@ export class MockGasOracle implements GasOracle {
     arbitrum: 0.5,
     polygon: 0.1,
   } as const;
+
+  private readonly networkUtilization = {
+    ethereum: 0.85,  // Usually high utilization
+    base: 0.45,      // Medium utilization
+    arbitrum: 0.55,  // Medium utilization  
+    polygon: 0.65,   // Medium-high utilization
+  } as const;
   
   async estimateGas(chain: Chain, asset: "USDC" | "EURC"): Promise<GasEstimate> {
-    // Add some randomness to make it feel realistic
+    // Get base fee and apply realistic factors
     const baseFee = this.baseFees[chain];
-    const randomMultiplier = 0.8 + Math.random() * 0.4; // ±20% variance
-    const feeUSD = Number((baseFee * randomMultiplier).toFixed(3));
+    const congestionMultiplier = await getCurrentGasMultiplier();
+    const utilization = this.networkUtilization[chain];
+    
+    // Apply network utilization and congestion
+    const utilizationMultiplier = 1 + (utilization * 0.5); // Up to 50% increase based on utilization
+    const randomVariance = 0.9 + Math.random() * 0.2; // ±10% random variance
+    
+    const feeUSD = Number((baseFee * congestionMultiplier * utilizationMultiplier * randomVariance).toFixed(3));
     
     const chainConfig = getChainConfig(chain);
-    const baseEta = Math.round(chainConfig.blockTime * 3); // ~3 block confirmations
-    const etaSeconds = Math.max(baseEta, 1);
     
-    const explanation = this.generateExplanation(chain, feeUSD, etaSeconds, asset);
+    // Calculate ETA based on network congestion and utilization
+    const baseEta = chainConfig.blockTime * 3; // ~3 block confirmations
+    const congestionDelay = congestionMultiplier > 1.5 ? baseEta * 0.5 : 0; // Additional delay if congested
+    const etaSeconds = Math.max(Math.round(baseEta + congestionDelay), 1);
+    
+    const explanation = this.generateExplanation(chain, feeUSD, etaSeconds, asset, utilization, congestionMultiplier > 1.2);
     
     return {
       chain,
@@ -33,27 +49,29 @@ export class MockGasOracle implements GasOracle {
     };
   }
   
-  private generateExplanation(chain: Chain, feeUSD: number, etaSeconds: number, asset: string): string {
+  private generateExplanation(chain: Chain, feeUSD: number, etaSeconds: number, asset: string, utilization: number, isCongested: boolean): string {
     const config = getChainConfig(chain);
-    const minutes = Math.round(etaSeconds / 60);
+    const timeStr = etaSeconds < 60 ? `${etaSeconds}s` : `${Math.round(etaSeconds / 60)}min`;
+    const utilizationText = utilization > 0.8 ? "High network activity" : utilization > 0.6 ? "Moderate activity" : "Low activity";
+    const congestionText = isCongested ? " (congested)" : "";
     
     if (chain === "ethereum") {
-      return `${config.name}: Higher gas fees (~$${feeUSD}) but most secure. ${asset} transfer takes ~${minutes}min.`;
+      return `${config.name}: $${feeUSD} fee${congestionText}. Most secure option. ${utilizationText}. ETA: ${timeStr}`;
     }
     
     if (chain === "base") {
-      return `${config.name}: Very low fees (~$${feeUSD}) on Coinbase L2. ${asset} transfer takes ~${etaSeconds}s.`;
+      return `${config.name}: $${feeUSD} fee on Coinbase L2${congestionText}. Excellent for USDC. ${utilizationText}. ETA: ${timeStr}`;
     }
     
     if (chain === "arbitrum") {
-      return `${config.name}: Low fees (~$${feeUSD}) with fast finality. ${asset} transfer takes ~${etaSeconds}s.`;
+      return `${config.name}: $${feeUSD} fee with optimistic rollup${congestionText}. Fast & cheap. ${utilizationText}. ETA: ${timeStr}`;
     }
     
     if (chain === "polygon") {
-      return `${config.name}: Low fees (~$${feeUSD}) with good ecosystem. ${asset} transfer takes ~${etaSeconds}s.`;
+      return `${config.name}: $${feeUSD} fee on PoS sidechain${congestionText}. Good DeFi ecosystem. ${utilizationText}. ETA: ${timeStr}`;
     }
     
-    return `${config.name}: Fee ~$${feeUSD}, ETA ~${etaSeconds}s`;
+    return `${config.name}: $${feeUSD} fee, ETA ${timeStr}${congestionText}`;
   }
 }
 

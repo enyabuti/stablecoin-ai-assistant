@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatComposer } from "@/components/ChatComposer";
 import { QuoteCard } from "@/components/QuoteCard";
+import { QuoteSummary } from "@/components/QuoteSummary";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -169,6 +170,14 @@ export default function NewRulePage() {
                   </details>
                 </CardContent>
               </Card>
+
+              {/* Quote Summary */}
+              {quotes.length > 1 && (
+                <QuoteSummary 
+                  quotes={quotes} 
+                  transferAmount={parsedRule.amount.value}
+                />
+              )}
 
               {/* Route Quotes */}
               <div className="space-y-4">
