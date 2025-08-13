@@ -7,9 +7,12 @@ import { Send, Paperclip, Mic } from "lucide-react";
 
 interface ChatComposerProps {
   onSendMessage?: (message: string) => void;
+  // Legacy props for rule parsing
+  onRuleParsed?: (rule: any) => void;
+  onError?: (error: string) => void;
 }
 
-export function ChatComposer({ onSendMessage }: ChatComposerProps) {
+export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatComposerProps) {
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -21,13 +24,32 @@ export function ChatComposer({ onSendMessage }: ChatComposerProps) {
     setInput("");
     setIsProcessing(true);
 
-    // Call the parent handler
-    onSendMessage?.(userMessage);
+    // If this is being used for rule parsing (legacy mode)
+    if (onRuleParsed) {
+      try {
+        const response = await fetch("/api/chat/parse", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage }),
+        });
 
-    // Simulate processing delay
-    setTimeout(() => {
-      setIsProcessing(false);
-    }, 1000);
+        const data = await response.json();
+
+        if (data.error) {
+          onError?.(data.error);
+        } else if (data.rule) {
+          onRuleParsed(data.rule);
+        }
+      } catch (error) {
+        const errorMsg = "Failed to parse your request. Please try again.";
+        onError?.(errorMsg);
+      }
+    } else {
+      // New chat interface mode
+      onSendMessage?.(userMessage);
+    }
+
+    setIsProcessing(false);
   };
 
   return (
