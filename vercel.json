@@ -19,5 +19,19 @@
   },
   "regions": ["iad1"],
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "checks": [
+    {
+      "name": "Health Check",
+      "path": "/api/health",
+      "initialDelay": "10s",
+      "period": "1m"
+    },
+    {
+      "name": "Deployment Check",
+      "path": "/api/deployment-check",
+      "initialDelay": "15s",
+      "period": "5m"
+    }
+  ]
 }
