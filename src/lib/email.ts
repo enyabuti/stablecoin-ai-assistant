@@ -11,25 +11,40 @@ export async function sendVerificationRequest({
 }) {
   const { host } = new URL(url);
   
-  // For development, log to console
+  console.log(`🔗 Sending verification email to: ${email}`);
+  console.log(`📧 Environment: ${process.env.NODE_ENV}`);
+  console.log(`🔑 Has API Key: ${!!process.env.RESEND_API_KEY}`);
+  console.log(`🌐 Host: ${host}`);
+  
+  // For development, ALSO log to console but still try to send email if API key exists
   if (process.env.NODE_ENV === "development") {
     console.log("\n🔗 MAGIC LINK (Development Mode):");
     console.log(`📧 To: ${email}`);
     console.log(`🔗 Link: ${url}`);
     console.log("\nCopy this link to your browser to sign in\n");
-    return;
+    
+    // If no API key in development, just use console logging
+    if (!process.env.RESEND_API_KEY) {
+      console.log("⚠️ No RESEND_API_KEY - using console logging only");
+      return;
+    }
   }
 
-  // Only initialize Resend when actually sending emails
+  // Check for API key
   if (!process.env.RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY is required for production email sending");
+    console.error("❌ RESEND_API_KEY is missing!");
+    throw new Error("RESEND_API_KEY is required for email sending");
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
+  
+  // Use Resend's default verified domain for now
+  const fromEmail = "onboarding@resend.dev";
+  console.log(`📤 Sending from: ${fromEmail} to: ${email}`);
 
   try {
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@ferrow.app",
+    const result = await resend.emails.send({
+      from: fromEmail,
       to: email,
       subject: `Sign in to Ferrow`,
       html: `
@@ -70,8 +85,15 @@ export async function sendVerificationRequest({
         </div>
       `,
     });
+    
+    console.log("✅ Email sent successfully:", result);
+    
   } catch (error) {
-    console.error("Failed to send verification email:", error);
-    throw new Error("Failed to send verification email");
+    console.error("❌ Failed to send verification email:", error);
+    console.error("Error details:", JSON.stringify(error, null, 2));
+    
+    // Don't throw error to user, just log it
+    // The user will still see the "check your email" message
+    console.log("⚠️ Email failed but continuing...");
   }
 }

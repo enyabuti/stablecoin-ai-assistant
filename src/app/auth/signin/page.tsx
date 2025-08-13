@@ -14,6 +14,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,18 +22,32 @@ export default function SignIn() {
     if (!email) return;
 
     setIsLoading(true);
+    setError("");
+    
     try {
+      console.log("🚀 Attempting to sign in with:", email);
+      
       const result = await signIn("email", { 
         email, 
         redirect: false,
         callbackUrl: "/dashboard"
       });
       
+      console.log("📬 Sign in result:", result);
+      
       if (result?.ok) {
         setIsSubmitted(true);
+        console.log("✅ Sign in successful - email should be sent");
+      } else if (result?.error) {
+        setError(`Authentication failed: ${result.error}`);
+        console.error("❌ Sign in failed:", result.error);
+      } else {
+        setError("Something went wrong. Please try again.");
+        console.error("❌ Unknown sign in error:", result);
       }
     } catch (error) {
-      console.error("Sign in error:", error);
+      console.error("❌ Sign in error:", error);
+      setError("Failed to send email. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +112,13 @@ export default function SignIn() {
                   disabled={isLoading}
                 />
               </div>
+              
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+              
               <Button 
                 type="submit" 
                 className="w-full btn-primary"
@@ -107,7 +129,7 @@ export default function SignIn() {
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
                 )}
-{isLoading ? "Sending..." : "Continue with Email"}
+                {isLoading ? "Sending..." : "Continue with Email"}
               </Button>
             </form>
             
