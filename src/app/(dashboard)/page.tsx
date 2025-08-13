@@ -185,6 +185,37 @@ const useCases = [
 export default function DashboardPage() {
   return (
     <div className="flex flex-col h-screen">
+      {/* Header Navigation */}
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <h1 className="text-xl font-bold text-foreground">{APP_NAME}</h1>
+            </div>
+            
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-3">
+              <Button asChild variant="ghost" className="text-muted-foreground hover:text-foreground">
+                <Link href="/auth/signin">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+              <Button asChild className="btn-primary">
+                <Link href="/auth/signin">
+                  <Users className="w-4 h-4 mr-2" />
+                  Sign Up Free
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto">

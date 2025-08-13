@@ -36,14 +36,26 @@ export function AuthButton() {
   }
 
   return (
-    <Button 
-      variant="ghost" 
-      size="sm" 
-      onClick={() => signIn()}
-      className="text-muted-foreground hover:text-foreground"
-    >
-      <LogIn className="w-4 h-4" />
-      <span className="hidden sm:inline ml-2">Sign in</span>
-    </Button>
+    <div className="flex items-center gap-2">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => signIn()}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <LogIn className="w-4 h-4" />
+        <span className="hidden sm:inline ml-2">Sign in</span>
+      </Button>
+      <Button 
+        asChild
+        size="sm" 
+        className="btn-primary"
+      >
+        <a href="/auth/signin?mode=signup">
+          <span className="hidden sm:inline">Sign up</span>
+          <span className="sm:hidden">+</span>
+        </a>
+      </Button>
+    </div>
   );
 }
