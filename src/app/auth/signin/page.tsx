@@ -15,6 +15,7 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,29 +26,58 @@ export default function SignIn() {
     setError("");
     
     try {
-      console.log("🚀 Attempting to sign in with:", email);
-      
-      const result = await signIn("email", { 
-        email, 
-        redirect: false,
-        callbackUrl: "/dashboard"
-      });
-      
-      console.log("📬 Sign in result:", result);
-      
-      if (result?.ok) {
-        setIsSubmitted(true);
-        console.log("✅ Sign in successful - email should be sent");
-      } else if (result?.error) {
-        setError(`Authentication failed: ${result.error}`);
-        console.error("❌ Sign in failed:", result.error);
+      if (mode === "signup") {
+        console.log("🔐 Attempting to register:", email);
+        
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        console.log("📝 Registration result:", data);
+        
+        if (data.success) {
+          setIsSubmitted(true);
+          console.log("✅ Registration successful - email should be sent");
+        } else if (data.userExists) {
+          setError("User already exists. Please sign in instead.");
+          setMode("signin");
+        } else {
+          setError(data.error || "Registration failed. Please try again.");
+        }
+        
       } else {
-        setError("Something went wrong. Please try again.");
-        console.error("❌ Unknown sign in error:", result);
+        console.log("🚀 Attempting to sign in with:", email);
+        
+        const result = await signIn("email", { 
+          email, 
+          redirect: false,
+          callbackUrl: "/dashboard"
+        });
+        
+        console.log("📬 Sign in result:", result);
+        
+        if (result?.ok) {
+          setIsSubmitted(true);
+          console.log("✅ Sign in successful - email should be sent");
+        } else if (result?.error) {
+          if (result.error.includes("User not found") || result.error.includes("No user found")) {
+            setError("No account found with this email. Please sign up first.");
+            setMode("signup");
+          } else {
+            setError(`Authentication failed: ${result.error}`);
+          }
+          console.error("❌ Sign in failed:", result.error);
+        } else {
+          setError("Something went wrong. Please try again.");
+          console.error("❌ Unknown sign in error:", result);
+        }
       }
     } catch (error) {
-      console.error("❌ Sign in error:", error);
-      setError("Failed to send email. Please try again.");
+      console.error(`❌ ${mode} error:`, error);
+      setError("Failed to process request. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +98,10 @@ export default function SignIn() {
               We&apos;ve sent a magic link to <strong>{email}</strong>
             </p>
             <p className="text-sm text-muted-foreground">
-              Click the link in your email to access {APP_NAME}. If this is your first time, we&apos;ll create your account automatically.
+              {mode === "signup" 
+                ? "Click the link in your email to activate your new account and sign in."
+                : "Click the link in your email to sign in to your account."
+              }
             </p>
             <Button variant="outline" onClick={() => setIsSubmitted(false)} className="w-full">
               Use different email
@@ -94,9 +127,14 @@ export default function SignIn() {
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-primary rounded-2xl flex items-center justify-center">
               <Mail className="w-8 h-8 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl">Welcome to {APP_NAME}</CardTitle>
+            <CardTitle className="text-2xl">
+              {mode === "signup" ? "Create Account" : "Welcome Back"}
+            </CardTitle>
             <p className="text-muted-foreground">
-              Enter your email to sign in or create an account
+              {mode === "signup" 
+                ? "Enter your email to create a new account" 
+                : "Enter your email to sign in to your account"
+              }
             </p>
           </CardHeader>
           <CardContent>
@@ -129,9 +167,33 @@ export default function SignIn() {
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
                 )}
-                {isLoading ? "Sending..." : "Continue with Email"}
+{isLoading 
+                  ? "Sending..." 
+                  : mode === "signup" 
+                    ? "Create Account" 
+                    : "Sign In"
+                }
               </Button>
             </form>
+            
+            {/* Toggle between sign in and sign up */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {mode === "signup" ? "Already have an account?" : "Don't have an account?"}
+                {" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "signup" ? "signin" : "signup");
+                    setError("");
+                  }}
+                  className="text-primary hover:underline font-medium"
+                  disabled={isLoading}
+                >
+                  {mode === "signup" ? "Sign in instead" : "Create account"}
+                </button>
+              </p>
+            </div>
             
             <div className="mt-6 text-center">
               <p className="text-xs text-muted-foreground">
