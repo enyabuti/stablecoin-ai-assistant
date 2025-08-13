@@ -4,6 +4,8 @@ import { connection, ExecuteRuleJob, CheckConditionsJob } from "./queue";
 import { createRouter } from "@/lib/routing/router";
 import { MockCircleClient } from "@/lib/mocks/circleMock";
 import { conditionChecker } from "./conditionChecker";
+import { auditLogger } from "@/lib/audit/auditLogger";
+import { safetyGuardrails } from "@/lib/safety/guardrails";
 import { env } from "@/lib/env";
 import { nanoid } from "nanoid";
 import type { RuleJSON } from "@/lib/llm/schema";
@@ -238,7 +240,7 @@ export const conditionCheckWorker = connection ? new Worker<CheckConditionsJob>(
         rulesChecked: result.rulesChecked,
         triggered: result.triggered,
         conditions: result.conditions,
-        fxRates: Array.from(conditionChecker.getFxRates().entries()).map(([pair, rate]) => ({ pair, ...rate })),
+        fxRates: Array.from(conditionChecker.getFxRates().entries()).map(([, rate]) => rate),
       };
     } catch (error) {
       console.error('❌ Condition check worker error:', error);
@@ -261,7 +263,7 @@ export async function processConditionCheckJob(data: CheckConditionsJob) {
       rulesChecked: result.rulesChecked,
       triggered: result.triggered,
       conditions: result.conditions,
-      fxRates: Array.from(conditionChecker.getFxRates().entries()).map(([pair, rate]) => ({ pair, ...rate })),
+      fxRates: Array.from(conditionChecker.getFxRates().entries()).map(([, rate]) => rate),
     };
   } catch (error) {
     console.error('Condition check processing error:', error);

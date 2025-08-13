@@ -28,6 +28,11 @@ export interface CircleTransfer {
   transactionHash?: string;
   createDate: string;
   updateDate: string;
+  errorCode?: string;
+  errorMessage?: string;
+  gasUsed?: string;
+  blockNumber?: number;
+  confirmations?: number;
 }
 
 export interface CircleClient {
@@ -56,6 +61,11 @@ export class MockCircleClient implements CircleClient {
   private users = new Map<string, CircleUser>();
   private wallets = new Map<string, CircleWallet>();
   private transfers = new Map<string, CircleTransfer>();
+  private pendingTransfers = new Set<string>();
+  
+  // Configuration for realistic simulation
+  private readonly FAILURE_RATE = 0.02; // 2% failure rate
+  private readonly NETWORK_CONGESTION_FACTOR = Math.random() * 0.5 + 0.75; // 0.75-1.25x
   
   async createUser(email: string): Promise<CircleUser> {
     const user: CircleUser = {

@@ -259,7 +259,7 @@ export class SafetyGuardrails {
     overall: "HEALTHY" | "WARNING" | "CRITICAL";
     checks: Array<{ name: string; status: "PASS" | "WARN" | "FAIL"; details?: string }>;
   }> {
-    const checks = [];
+    const checks: Array<{ name: string; status: "PASS" | "WARN" | "FAIL"; details?: string }> = [];
 
     // Check 1: Rule count
     const ruleCount = await db.rule.count({

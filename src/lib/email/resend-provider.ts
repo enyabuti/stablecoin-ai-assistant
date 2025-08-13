@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Only initialize Resend if API key is available and not during build
+const resend = process.env.RESEND_API_KEY && process.env.NEXT_PHASE !== 'phase-production-build' 
+  ? new Resend(process.env.RESEND_API_KEY) 
+  : null;
 
 export async function sendVerificationRequest({
   identifier: email,
@@ -11,6 +14,10 @@ export async function sendVerificationRequest({
   url: string;
   provider: { from: string };
 }) {
+  if (!resend) {
+    throw new Error("Resend not configured - missing RESEND_API_KEY or running during build");
+  }
+  
   try {
     const { data, error } = await resend.emails.send({
       from: provider.from,
