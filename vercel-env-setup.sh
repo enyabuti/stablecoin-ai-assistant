@@ -17,6 +17,7 @@ echo "https://stablecoin-ai.vercel.app" | npx vercel env add NEXTAUTH_URL produc
 
 # Email (for magic links)
 echo "noreply@ferrow.app" | npx vercel env add EMAIL_FROM production
+echo "your-resend-api-key-here" | npx vercel env add RESEND_API_KEY production
 
 # Feature flags
 echo "false" | npx vercel env add USE_CIRCLE production

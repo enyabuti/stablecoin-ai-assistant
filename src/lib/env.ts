@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -20,6 +21,10 @@ const envSchema = z.object({
   CIRCLE_API_KEY: z.string().optional(),
   CIRCLE_ENTITY_SECRET: z.string().optional(),
   CIRCLE_WEBHOOK_SECRET: z.string().optional(),
+  
+  // Email Provider
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
   
   // LLM Provider
   OPENAI_API_KEY: z.string().optional(),
@@ -44,6 +49,8 @@ function getEnv() {
       CIRCLE_API_KEY: process.env.CIRCLE_API_KEY,
       CIRCLE_ENTITY_SECRET: process.env.CIRCLE_ENTITY_SECRET,
       CIRCLE_WEBHOOK_SECRET: process.env.CIRCLE_WEBHOOK_SECRET,
+      RESEND_API_KEY: process.env.RESEND_API_KEY,
+      EMAIL_FROM: process.env.EMAIL_FROM,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
       NODE_ENV: (process.env.NODE_ENV as any) || "production",
@@ -65,6 +72,8 @@ function getEnv() {
       CIRCLE_API_KEY: process.env.CIRCLE_API_KEY,
       CIRCLE_ENTITY_SECRET: process.env.CIRCLE_ENTITY_SECRET,
       CIRCLE_WEBHOOK_SECRET: process.env.CIRCLE_WEBHOOK_SECRET,
+      RESEND_API_KEY: process.env.RESEND_API_KEY,
+      EMAIL_FROM: process.env.EMAIL_FROM,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
       NODE_ENV: (process.env.NODE_ENV as any) || "development",

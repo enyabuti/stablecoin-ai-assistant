@@ -53,7 +53,7 @@ export default function SignIn() {
               We&apos;ve sent a magic link to <strong>{email}</strong>
             </p>
             <p className="text-sm text-muted-foreground">
-              Click the link in your email to sign in to {APP_NAME}
+              Click the link in your email to access {APP_NAME}. If this is your first time, we&apos;ll create your account automatically.
             </p>
             <Button variant="outline" onClick={() => setIsSubmitted(false)} className="w-full">
               Use different email
@@ -79,9 +79,9 @@ export default function SignIn() {
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-primary rounded-2xl flex items-center justify-center">
               <Mail className="w-8 h-8 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl">Sign in to {APP_NAME}</CardTitle>
+            <CardTitle className="text-2xl">Welcome to {APP_NAME}</CardTitle>
             <p className="text-muted-foreground">
-              Enter your email to get a magic link
+              Enter your email to sign in or create an account
             </p>
           </CardHeader>
           <CardContent>
@@ -107,7 +107,7 @@ export default function SignIn() {
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
                 )}
-                {isLoading ? "Sending..." : "Send magic link"}
+{isLoading ? "Sending..." : "Continue with Email"}
               </Button>
             </form>
             
