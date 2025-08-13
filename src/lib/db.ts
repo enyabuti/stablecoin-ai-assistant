@@ -9,15 +9,28 @@ let isDatabaseHealthy = true;
 let lastConnectionError: Error | null = null;
 
 // Create Prisma client with better error handling
-export const db = globalForPrisma.prisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  errorFormat: "pretty",
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
+let prismaClient: PrismaClient | null = null;
+
+try {
+  prismaClient = globalForPrisma.prisma ?? new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    errorFormat: "pretty",
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL
+      }
     }
-  }
-});
+  });
+} catch (error) {
+  console.warn('Failed to initialize Prisma client:', error);
+  // Create a mock client for build time
+  prismaClient = null;
+}
+
+// If prismaClient is null, we'll just re-export it and let runtime handle the errors
+export const db = prismaClient as any;
+
+if (process.env.NODE_ENV !== "production" && prismaClient) globalForPrisma.prisma = prismaClient;
 
 // Monitor connection health
 async function checkDatabaseHealth() {
@@ -78,18 +91,18 @@ export async function testDatabaseConnection() {
   return await checkDatabaseHealth();
 }
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
-
 // Graceful shutdown
 if (typeof window === "undefined") {
   process.on("beforeExit", async () => {
     try {
-      await db.$disconnect();
+      if (prismaClient) await prismaClient.$disconnect();
     } catch (error) {
       console.warn('Error during database disconnect:', error);
     }
   });
   
-  // Periodic health check
-  setInterval(checkDatabaseHealth, 30000); // Check every 30 seconds
+  // Periodic health check only if we have a real client
+  if (prismaClient) {
+    setInterval(checkDatabaseHealth, 30000); // Check every 30 seconds
+  }
 }

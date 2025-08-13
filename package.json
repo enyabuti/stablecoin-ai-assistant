@@ -59,6 +59,9 @@
     "zod": "^3.22.4",
     "zustand": "^4.5.0"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
     "@types/node": "^20",

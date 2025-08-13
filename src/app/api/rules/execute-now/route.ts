@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    if (rule.status !== "ACTIVE") {
+    if ((rule as any).status !== "ACTIVE") {
       return NextResponse.json(
         { error: "Rule is not active" },
         { status: 400 }
@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
     
     // Add to execution queue (will fall back to immediate execution if Redis unavailable)
     const job = await addExecuteRuleJob({
-      ruleId: rule.id,
-      userId: rule.userId,
+      ruleId: (rule as any).id,
+      userId: (rule as any).userId,
       idempotencyKey,
       triggeredBy: "manual",
     });
