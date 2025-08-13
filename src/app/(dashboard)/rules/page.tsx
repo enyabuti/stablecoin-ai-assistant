@@ -90,7 +90,7 @@ export default function RulesPage() {
             Manage your automation rules and schedules
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
           <Link href="/rules/new">
             <Plus className="w-4 h-4 mr-2" />
             New Rule
@@ -192,7 +192,7 @@ export default function RulesPage() {
             <p className="text-muted-foreground mb-6">
               Create your first rule to start automating stablecoin transfers
             </p>
-            <Button asChild>
+            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <Link href="/rules/new">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Rule
