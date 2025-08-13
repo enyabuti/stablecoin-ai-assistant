@@ -98,6 +98,20 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      backgroundImage: {
+        'chatgpt-gradient': 'radial-gradient(ellipse at top left, #F9D9D0 0%, #FCE3B0 20%, #F9C8D0 35%, #E1D4F5 55%, #C9D9F7 75%, #F4D0B0 100%)',
+        'hero-gradient': 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 25%, #06B6D4 75%, #0891B2 100%)',
+        'accent-gradient': 'linear-gradient(90deg, #8B5CF6, #06B6D4)',
+        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+      },
+      backdropBlur: {
+        'xs': '2px',
+        'glass': '20px',
+      },
+      boxShadow: {
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+        'glass-hover': '0 12px 40px rgba(0, 0, 0, 0.15), 0 6px 20px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+      },
       fontFamily: {
         sans: ["var(--font-inter)"],
         mono: ["var(--font-jetbrains-mono)"],

@@ -23,10 +23,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
-        <div className="min-h-screen">
-          {children}
+    <html lang="en">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+        <div className="min-h-screen bg-chatgpt-gradient">
+          <div className="min-h-screen backdrop-blur-xs">
+            {children}
+          </div>
         </div>
       </body>
     </html>
