@@ -10,15 +10,17 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
+      server: process.env.EMAIL_SERVER || "smtp://user:pass@localhost:587",
+      from: process.env.EMAIL_FROM || "dev@ferrow.app",
+      // For development: log emails to console instead of sending
+      ...(process.env.NODE_ENV === "development" && !process.env.EMAIL_SERVER && {
+        sendVerificationRequest: async ({ identifier, url, provider }) => {
+          console.log("\n🔗 MAGIC LINK (Development Mode):");
+          console.log(`📧 To: ${identifier}`);
+          console.log(`🔗 Link: ${url}`);
+          console.log("\nCopy this link to your browser to sign in\n");
         },
-      },
-      from: process.env.EMAIL_FROM || "noreply@ferrow.app",
+      }),
     }),
   ],
   session: {
