@@ -117,7 +117,11 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
           <button
             key={index}
             onClick={() => setInput(suggestion)}
-            className="px-3 py-1.5 text-xs rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground smooth-transition border border-border"
+            className={`px-3 py-1.5 text-xs rounded-full smooth-transition border ${
+              suggestion.includes('rule') 
+                ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 hover:text-primary font-medium' 
+                : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground border-border'
+            }`}
           >
             {suggestion}
           </button>
