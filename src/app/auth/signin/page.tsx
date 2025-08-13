@@ -35,54 +35,27 @@ function SignInForm() {
     setError("");
     
     try {
-      if (mode === "signup") {
-        console.log("🔐 Attempting to register:", email);
-        
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        });
-        
-        const data = await response.json();
-        console.log("📝 Registration result:", data);
-        
-        if (data.success) {
-          setIsSubmitted(true);
-          console.log("✅ Registration successful - email should be sent");
-        } else if (data.userExists) {
-          setError("User already exists. Please sign in instead.");
-          setMode("signin");
-        } else {
-          setError(data.error || "Registration failed. Please try again.");
-        }
-        
+      console.log(`🚀 Attempting to ${mode} with:`, email);
+      
+      // Use NextAuth for both sign-up and sign-in
+      // NextAuth with email provider automatically creates users if they don't exist
+      const result = await signIn("email", { 
+        email, 
+        redirect: false,
+        callbackUrl: "/dashboard"
+      });
+      
+      console.log("📬 Authentication result:", result);
+      
+      if (result?.ok) {
+        setIsSubmitted(true);
+        console.log("✅ Authentication successful - email should be sent");
+      } else if (result?.error) {
+        setError(`Authentication failed: ${result.error}`);
+        console.error("❌ Authentication failed:", result.error);
       } else {
-        console.log("🚀 Attempting to sign in with:", email);
-        
-        const result = await signIn("email", { 
-          email, 
-          redirect: false,
-          callbackUrl: "/dashboard"
-        });
-        
-        console.log("📬 Sign in result:", result);
-        
-        if (result?.ok) {
-          setIsSubmitted(true);
-          console.log("✅ Sign in successful - email should be sent");
-        } else if (result?.error) {
-          if (result.error.includes("User not found") || result.error.includes("No user found")) {
-            setError("No account found with this email. Please sign up first.");
-            setMode("signup");
-          } else {
-            setError(`Authentication failed: ${result.error}`);
-          }
-          console.error("❌ Sign in failed:", result.error);
-        } else {
-          setError("Something went wrong. Please try again.");
-          console.error("❌ Unknown sign in error:", result);
-        }
+        setError("Something went wrong. Please try again.");
+        console.error("❌ Unknown authentication error:", result);
       }
     } catch (error) {
       console.error(`❌ ${mode} error:`, error);
@@ -107,10 +80,7 @@ function SignInForm() {
               We&apos;ve sent a magic link to <strong>{email}</strong>
             </p>
             <p className="text-sm text-muted-foreground">
-              {mode === "signup" 
-                ? "Click the link in your email to activate your new account and sign in."
-                : "Click the link in your email to sign in to your account."
-              }
+              Click the link in your email to access your account. If this is your first time, we&apos;ll create your account automatically.
             </p>
             <Button variant="outline" onClick={() => setIsSubmitted(false)} className="w-full">
               Use different email
