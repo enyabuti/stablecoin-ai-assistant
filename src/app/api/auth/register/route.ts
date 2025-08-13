@@ -27,38 +27,62 @@ export async function POST(request: NextRequest) {
     }
     
     // Create new user
-    const user = await db.user.create({
-      data: {
-        email: email.toLowerCase(),
-        emailVerified: null, // Will be set when they click the magic link
-      }
-    });
+    let user;
+    try {
+      user = await db.user.create({
+        data: {
+          email: email.toLowerCase(),
+          emailVerified: null, // Will be set when they click the magic link
+        }
+      });
+      console.log(`✅ Created new user: ${user.id} for ${email}`);
+    } catch (dbError) {
+      console.error('❌ Database user creation failed:', dbError);
+      throw new Error(`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`);
+    }
     
-    console.log(`✅ Created new user: ${user.id} for ${email}`);
+    if (!user) {
+      throw new Error('User creation returned null');
+    }
     
     // Generate a verification token
     const token = nanoid(32);
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     
     // Create verification token
-    await db.verificationToken.create({
-      data: {
-        identifier: email.toLowerCase(),
-        token,
-        expires,
-      }
-    });
+    try {
+      await db.verificationToken.create({
+        data: {
+          identifier: email.toLowerCase(),
+          token,
+          expires,
+        }
+      });
+      console.log(`✅ Created verification token for ${email}`);
+    } catch (tokenError) {
+      console.error('❌ Token creation failed:', tokenError);
+      // Clean up user if token creation fails
+      await db.user.delete({ where: { id: user.id } }).catch(console.error);
+      throw new Error(`Token creation error: ${tokenError instanceof Error ? tokenError.message : 'Unknown token error'}`);
+    }
     
     // Create the magic link URL
     const baseUrl = process.env.NEXTAUTH_URL || 'https://stablecoin-ai.vercel.app';
     const magicLinkUrl = `${baseUrl}/api/auth/callback/email?callbackUrl=${encodeURIComponent(`${baseUrl}/dashboard`)}&token=${token}&email=${encodeURIComponent(email)}`;
     
     // Send the verification email
-    await sendVerificationRequest({
-      identifier: email.toLowerCase(),
-      url: magicLinkUrl,
-      provider: {}
-    });
+    try {
+      await sendVerificationRequest({
+        identifier: email.toLowerCase(),
+        url: magicLinkUrl,
+        provider: {}
+      });
+      console.log(`✅ Sent verification email to ${email}`);
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError);
+      // Don't fail the registration if email fails, but log it
+      console.log('⚠️ User created but email failed to send');
+    }
     
     return NextResponse.json({ 
       success: true,
