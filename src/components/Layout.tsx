@@ -10,7 +10,8 @@ import {
   ArrowLeftRight, 
   Sparkles,
   Plus,
-  TestTube
+  TestTube,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,11 @@ const navigation = [
     name: "Transfers", 
     href: "/transfers",
     icon: ArrowLeftRight,
+  },
+  {
+    name: "Profile",
+    href: "/profile",
+    icon: User,
   },
   {
     name: "Settings",

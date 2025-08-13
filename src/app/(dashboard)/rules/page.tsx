@@ -73,14 +73,48 @@ function formatDate(dateString: string | null) {
   });
 }
 
+// Mock data for demo mode
+const mockRules = [
+  {
+    id: "rule_demo_1",
+    type: "schedule",
+    status: "ACTIVE",
+    json: { description: "Send $500 USDC to contractor monthly" },
+    nextRunAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    executionCount: 12,
+    totalFees: 2.84,
+    avgFee: 0.237,
+    lastExecution: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+  },
+  {
+    id: "rule_demo_2", 
+    type: "conditional",
+    status: "ACTIVE",
+    json: { description: "Buy $200 ETH when price drops below $2000" },
+    nextRunAt: null,
+    executionCount: 3,
+    totalFees: 0.45,
+    avgFee: 0.150,
+    lastExecution: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
+  },
+  {
+    id: "rule_demo_3",
+    type: "schedule", 
+    status: "PAUSED",
+    json: { description: "Weekly DCA $100 into BTC" },
+    nextRunAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+    executionCount: 8,
+    totalFees: 1.92,
+    avgFee: 0.240,
+    lastExecution: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) // 14 days ago
+  }
+];
+
 export default async function RulesPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
-  }
-
-  const rules = await getUserRules(session.user.id);
+  // Use mock data for demo mode, real data for authenticated users
+  const rules = session?.user?.id ? await getUserRules(session.user.id) : mockRules;
 
   return (
     <div className="p-8 space-y-8">
@@ -101,17 +135,22 @@ export default async function RulesPage() {
       </div>
 
       {/* Demo Mode Banner */}
-      <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
-            <TestTube className="w-3 h-3 text-amber-600" />
+      {!session?.user?.id && (
+        <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
+              <TestTube className="w-3 h-3 text-amber-600" />
+            </div>
+            <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode - Sample Data</h3>
           </div>
-          <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode</h3>
+          <p className="text-sm text-amber-600 dark:text-amber-400">
+            These are example automation rules to showcase functionality. 
+            <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
+              Sign up
+            </Link> to create your own rules and enable live transactions.
+          </p>
         </div>
-        <p className="text-sm text-amber-600 dark:text-amber-400">
-          All rules are in demo mode. Configure Circle API keys in Settings to enable live transactions.
-        </p>
-      </div>
+      )}
 
       {/* Rules Table */}
       {rules.length > 0 ? (

@@ -54,14 +54,85 @@ function formatDate(dateString: string) {
   });
 }
 
+// Mock data for demo mode
+const mockExecutions = [
+  {
+    id: "exec_demo_1",
+    status: "COMPLETED",
+    feeUsd: 0.23,
+    chain: "base",
+    txHash: "0x1234567890abcdef1234567890abcdef12345678",
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    errorMessage: null,
+    ruleId: "rule_demo_1",
+    rule: {
+      type: "schedule",
+      json: { description: "Send $500 USDC to contractor monthly" }
+    }
+  },
+  {
+    id: "exec_demo_2",
+    status: "COMPLETED", 
+    feeUsd: 0.15,
+    chain: "ethereum",
+    txHash: "0xabcdef1234567890abcdef1234567890abcdef12",
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    errorMessage: null,
+    ruleId: "rule_demo_2",
+    rule: {
+      type: "conditional",
+      json: { description: "Buy $200 ETH when price drops below $2000" }
+    }
+  },
+  {
+    id: "exec_demo_3",
+    status: "PENDING",
+    feeUsd: null,
+    chain: "base",
+    txHash: null,
+    createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+    errorMessage: null,
+    ruleId: "rule_demo_3",
+    rule: {
+      type: "schedule",
+      json: { description: "Weekly DCA $100 into BTC" }
+    }
+  },
+  {
+    id: "exec_demo_4",
+    status: "FAILED",
+    feeUsd: null,
+    chain: "polygon",
+    txHash: null,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 24 hours ago
+    errorMessage: "Insufficient balance",
+    ruleId: "rule_demo_4",
+    rule: {
+      type: "conditional", 
+      json: { description: "Emergency stop-loss at 20% drop" }
+    }
+  },
+  {
+    id: "exec_demo_5",
+    status: "COMPLETED",
+    feeUsd: 0.08,
+    chain: "arbitrum",
+    txHash: "0x9876543210fedcba9876543210fedcba98765432",
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    errorMessage: null,
+    ruleId: "rule_demo_5", 
+    rule: {
+      type: "schedule",
+      json: { description: "Send $25 USDC to Mom weekly" }
+    }
+  }
+];
+
 export default async function TransfersPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
-  }
-
-  const executions = await getUserExecutions(session.user.id);
+  // Use mock data for demo mode, real data for authenticated users
+  const executions = session?.user?.id ? await getUserExecutions(session.user.id) : mockExecutions;
 
   const stats = {
     total: executions.length,
@@ -87,17 +158,22 @@ export default async function TransfersPage() {
       </div>
 
       {/* Demo Mode Banner */}
-      <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
-            <TestTube className="w-3 h-3 text-amber-600" />
+      {!session?.user?.id && (
+        <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
+              <TestTube className="w-3 h-3 text-amber-600" />
+            </div>
+            <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode - Sample Data</h3>
           </div>
-          <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode</h3>
+          <p className="text-sm text-amber-600 dark:text-amber-400">
+            These are example transfer executions to showcase functionality. 
+            <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
+              Sign up
+            </Link> to see your actual transactions and execute real transfers.
+          </p>
         </div>
-        <p className="text-sm text-amber-600 dark:text-amber-400">
-          All transfers shown are in demo mode. No real transactions have been executed.
-        </p>
-      </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

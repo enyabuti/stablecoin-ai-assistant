@@ -12,7 +12,8 @@ import {
   Webhook, 
   TestTube, 
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Shield
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -23,6 +24,23 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold tracking-tight text-contrast-enhanced">Settings</h1>
         <p className="text-muted-foreground">
           Configure API keys, feature flags, and webhook settings
+        </p>
+      </div>
+
+      {/* Demo Mode Banner */}
+      <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
+            <TestTube className="w-3 h-3 text-amber-600" />
+          </div>
+          <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode - Safe Configuration</h3>
+        </div>
+        <p className="text-sm text-amber-600 dark:text-amber-400">
+          Settings are in demo mode. Changes won't affect live systems until you configure production API keys.
+          <span className="flex items-center gap-1 mt-2">
+            <Shield className="w-3 h-3" />
+            All sensitive data is mocked for security
+          </span>
         </p>
       </div>
 

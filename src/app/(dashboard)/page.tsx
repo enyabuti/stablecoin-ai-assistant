@@ -64,12 +64,6 @@ const mockConversation = [
 
 const quickActions = [
   {
-    icon: DollarSign,
-    label: "Sign In",
-    description: "Access your account",
-    href: "/auth/signin"
-  },
-  {
     icon: Send,
     label: "Try Demo",
     description: "Explore without signing up",
@@ -77,15 +71,21 @@ const quickActions = [
   },
   {
     icon: Sparkles,
-    label: "Create Rule",
-    description: "Set up automation",
-    href: "/rules/new"
+    label: "Create Automation",
+    description: "Set up your first rule",
+    href: "/auth/signin?mode=signup"
   },
   {
     icon: ArrowLeftRight,
     label: "View Features",
     description: "Learn about capabilities",
     href: "#features"
+  },
+  {
+    icon: BarChart3,
+    label: "See Analytics",
+    description: "View performance metrics",
+    href: "#analytics"
   },
 ];
 
@@ -197,18 +197,12 @@ export default function DashboardPage() {
               <h1 className="text-xl font-bold text-foreground">{APP_NAME}</h1>
             </div>
             
-            {/* Auth Buttons */}
+            {/* Auth Button */}
             <div className="flex items-center gap-3">
-              <Button asChild variant="ghost" className="text-muted-foreground hover:text-foreground">
-                <Link href="/auth/signin">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
-                </Link>
-              </Button>
               <Button asChild className="btn-primary">
-                <Link href="/auth/signin">
+                <Link href="/auth/signin?mode=signup">
                   <Users className="w-4 h-4 mr-2" />
-                  Sign Up Free
+                  Get Started
                 </Link>
               </Button>
             </div>
@@ -220,17 +214,17 @@ export default function DashboardPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
-          <div className="text-center py-16 px-6">
-            <div className="w-24 h-24 mx-auto mb-8 bg-gradient-primary rounded-3xl flex items-center justify-center shadow-glass glow-effect">
-              <Sparkles className="w-12 h-12 text-primary-foreground" />
+          <div className="text-center py-20 px-6">
+            <div className="w-28 h-28 mx-auto mb-10 bg-gradient-primary rounded-3xl flex items-center justify-center shadow-glass glow-effect">
+              <Sparkles className="w-14 h-14 text-primary-foreground" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
+            <h1 className="text-6xl md:text-7xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-8">
               {APP_NAME}
             </h1>
-            <p className="text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto">
+            <p className="text-2xl md:text-3xl text-muted-foreground mb-6 max-w-4xl mx-auto leading-relaxed">
               {APP_TAGLINE}
             </p>
-            <p className="text-lg text-muted-foreground/80 mb-8 max-w-4xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground/80 mb-12 max-w-5xl mx-auto leading-relaxed">
               The AI-powered platform that automates your stablecoin transfers across multiple blockchains. 
               Set up intelligent rules using natural language and let Ferrow handle the rest – 24/7 monitoring, 
               optimal routing, and instant execution.
@@ -239,12 +233,12 @@ export default function DashboardPage() {
             {/* Get Started CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button asChild size="lg" className="btn-primary px-8 py-4 text-lg">
-                <Link href="/auth/signin">
-                  <LogIn className="w-5 h-5 mr-2" />
-                  Get Started Free
+                <Link href="/auth/signin?mode=signup">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Start Automating
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
+              <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg border-primary/30 hover:bg-primary/10">
                 <Link href="/rules/new">
                   <TestTube className="w-5 h-5 mr-2" />
                   Try Demo
@@ -253,20 +247,21 @@ export default function DashboardPage() {
             </div>
             
             {/* Quick Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-20">
               {quickActions.map((action, index) => (
                 <Link
                   key={index}
                   href={action.href}
-                  className="glass-card p-6 rounded-2xl text-left hover-lift group animate-fade-in block"
+                  className="relative overflow-hidden glass-card p-8 rounded-3xl text-left hover-lift group animate-fade-in block shadow-lg border border-primary/10"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 smooth-transition">
-                      <action.icon className="w-6 h-6 text-primary-foreground" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 smooth-transition"></div>
+                  <div className="relative flex items-start gap-6">
+                    <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 smooth-transition">
+                      <action.icon className="w-8 h-8 text-primary-foreground" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-card-foreground mb-1">{action.label}</h3>
-                      <p className="text-sm text-muted-foreground">{action.description}</p>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-card-foreground mb-2 group-hover:text-primary smooth-transition">{action.label}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{action.description}</p>
                     </div>
                   </div>
                 </Link>
@@ -275,18 +270,30 @@ export default function DashboardPage() {
           </div>
 
           {/* Demo Mode Banner */}
-          <div className="px-6 mb-16">
-            <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl max-w-4xl mx-auto">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
-                  <TestTube className="w-3 h-3 text-amber-600" />
+          <div className="px-6 mb-12">
+            <div className="relative overflow-hidden glass-card border-amber-500/30 bg-gradient-to-r from-amber-50/20 via-yellow-50/20 to-amber-50/20 p-8 rounded-3xl max-w-5xl mx-auto shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-yellow-500/5"></div>
+              <div className="relative flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <TestTube className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode</h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="text-lg font-bold text-amber-700 dark:text-amber-300">Demo Mode Active</h3>
+                    <div className="px-3 py-1 bg-amber-500/20 rounded-full">
+                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Safe Testing</span>
+                    </div>
+                  </div>
+                  <p className="text-amber-600 dark:text-amber-400 leading-relaxed">
+                    Experience Ferrow risk-free! All data and transactions are simulated. 
+                    Explore features, test automation rules, and see how our AI handles your requests without any real funds involved.
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-xs text-amber-600/80 dark:text-amber-400/80">
+                    <Shield className="w-4 h-4" />
+                    <span>No real transactions • Sample data only • Always safe</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-amber-600 dark:text-amber-400">
-                This is a demonstration version of Ferrow. All balances, fees, and metrics shown are sample data. 
-                No real transactions will be executed until you connect a live wallet and enable production mode.
-              </p>
             </div>
           </div>
 
@@ -477,15 +484,15 @@ export default function DashboardPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild className="btn-primary px-8 py-3 text-lg">
-                  <Link href="/auth/signin">
-                    <MessageSquare className="w-5 h-5 mr-2" />
-                    Sign In to Start
+                  <Link href="/rules/new">
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Try Demo First
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="px-8 py-3 text-lg">
-                  <Link href="/rules/new">
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Try Demo
+                  <Link href="/auth/signin?mode=signup">
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    Create Account
                   </Link>
                 </Button>
               </div>
@@ -499,7 +506,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto p-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              © 2024 {APP_NAME}. All rights reserved.
+              © 2025 {APP_NAME}. All rights reserved.
             </div>
             <div className="flex flex-wrap gap-4 text-sm">
               <Link href="/terms" className="text-muted-foreground hover:text-foreground">

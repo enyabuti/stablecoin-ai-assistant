@@ -7,13 +7,26 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Protect dashboard routes
-        if (req.nextUrl.pathname.startsWith("/dashboard") || 
-            req.nextUrl.pathname.startsWith("/rules") ||
-            req.nextUrl.pathname.startsWith("/transfers") ||
-            req.nextUrl.pathname.startsWith("/settings")) {
+        const pathname = req.nextUrl.pathname;
+        
+        // Allow demo pages without authentication
+        if (pathname === "/rules/new" || 
+            pathname === "/rules" ||
+            pathname === "/transfers" ||
+            pathname === "/settings" ||
+            pathname === "/profile" ||
+            pathname.startsWith("/rules/demo")) {
+          return true;
+        }
+        
+        // Protect sensitive dashboard routes that require authentication
+        if (pathname.startsWith("/dashboard") || 
+            pathname.startsWith("/rules/edit") ||
+            pathname.startsWith("/transfers/send") ||
+            pathname.startsWith("/account")) {
           return !!token;
         }
+        
         return true;
       },
     },
@@ -25,6 +38,8 @@ export const config = {
     "/dashboard/:path*",
     "/rules/:path*", 
     "/transfers/:path*",
-    "/settings/:path*"
+    "/settings/:path*",
+    "/profile/:path*",
+    "/account/:path*"
   ]
 };

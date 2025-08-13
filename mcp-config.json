@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {
+        "DISABLE_THOUGHT_LOGGING": "false",
+        "MAX_HISTORY_SIZE": "1000"
+      }
+    },
+    "magic-mcp": {
+      "command": "npx",
+      "args": ["-y", "@smithery/cli", "magic-mcp"],
+      "env": {
+        "MAGIC_API_KEY": ""
+      }
+    }
+  }
+}
