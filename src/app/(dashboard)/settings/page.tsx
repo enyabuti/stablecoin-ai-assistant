@@ -36,7 +36,7 @@ export default function SettingsPage() {
           <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode - Safe Configuration</h3>
         </div>
         <p className="text-sm text-amber-600 dark:text-amber-400">
-          Settings are in demo mode. Changes won't affect live systems until you configure production API keys.
+          Settings are in demo mode. Changes won&apos;t affect live systems until you configure production API keys.
           <span className="flex items-center gap-1 mt-2">
             <Shield className="w-3 h-3" />
             All sensitive data is mocked for security
