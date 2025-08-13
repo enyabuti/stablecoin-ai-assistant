@@ -76,8 +76,8 @@ export class MockCircleClient implements CircleClient {
       address: this.generateMockAddress(chain),
       state: "LIVE",
       balances: [
-        { currency: "USDC", amount: "1000.00" },
-        { currency: "EURC", amount: "850.00" },
+        { currency: "USDC", amount: this.generateRandomBalance(500, 2000) },
+        { currency: "EURC", amount: this.generateRandomBalance(400, 1500) },
       ],
     };
     
@@ -191,5 +191,153 @@ export class MockCircleClient implements CircleClient {
       hash += chars[Math.floor(Math.random() * chars.length)];
     }
     return hash;
+  }
+  
+  // Enhanced methods implementation
+  async refreshWalletBalance(walletId: string): Promise<CircleWallet> {
+    const wallet = await this.getWallet(walletId);
+    
+    // Simulate balance fluctuation
+    const balanceVariation = (Math.random() - 0.5) * 100; // ±$50 variation
+    const currentUsdcBalance = parseFloat(wallet.balances[0].amount);
+    const newUsdcBalance = Math.max(0, currentUsdcBalance + balanceVariation);
+    
+    wallet.balances[0].amount = newUsdcBalance.toFixed(2);
+    this.wallets.set(walletId, wallet);
+    
+    return wallet;
+  }
+  
+  async cancelTransfer(transferId: string): Promise<CircleTransfer> {
+    const transfer = await this.getTransfer(transferId);
+    
+    if (transfer.status === "complete" || transfer.status === "failed") {
+      throw new Error(`Cannot cancel transfer ${transferId}: already ${transfer.status}`);
+    }
+    
+    transfer.status = "failed";
+    transfer.errorCode = "USER_CANCELLED";
+    transfer.errorMessage = "Transfer cancelled by user";
+    transfer.updateDate = new Date().toISOString();
+    
+    this.transfers.set(transferId, transfer);
+    this.pendingTransfers.delete(transferId);
+    
+    return transfer;
+  }
+  
+  async estimateTransferTime(chain: Chain, destinationChain?: Chain): Promise<{ min: number; max: number; typical: number }> {
+    if (destinationChain && destinationChain !== chain) {
+      // Cross-chain transfer (CCTP)
+      return {
+        min: 8,
+        max: 25,
+        typical: 15,
+      };
+    }
+    
+    // Same-chain transfer times by network
+    const chainTimes = {
+      "ethereum": { min: 1, max: 8, typical: 3 },
+      "polygon": { min: 0.5, max: 3, typical: 1 },
+      "arbitrum": { min: 0.5, max: 2, typical: 1 },
+      "optimism": { min: 0.5, max: 2, typical: 1 },
+      "base": { min: 0.3, max: 1.5, typical: 0.8 },
+      "avalanche": { min: 0.5, max: 2, typical: 1 },
+    };
+    
+    return chainTimes[chain] || { min: 1, max: 5, typical: 2 };
+  }
+  
+  validateAddress(address: string, chain: Chain): boolean {
+    // Basic EVM address validation
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      return false;
+    }
+    
+    // Additional chain-specific validations could be added here
+    return true;
+  }
+  
+  private simulateTransferProcessing(transfer: CircleTransfer, isCrossChain: boolean = false): void {
+    this.pendingTransfers.add(transfer.id);
+    
+    const baseDelay = isCrossChain ? 10000 : 2000; // 10s for CCTP, 2s for same-chain
+    const networkDelay = baseDelay * this.NETWORK_CONGESTION_FACTOR;
+    const finalDelay = Math.max(1000, networkDelay + (Math.random() * 2000)); // Add jitter
+    
+    // Simulate intermediate "running" status
+    setTimeout(() => {
+      if (this.pendingTransfers.has(transfer.id)) {
+        transfer.status = "running";
+        transfer.updateDate = new Date().toISOString();
+        this.transfers.set(transfer.id, transfer);
+      }
+    }, finalDelay * 0.3);
+    
+    // Simulate final completion or failure
+    setTimeout(() => {
+      if (!this.pendingTransfers.has(transfer.id)) {
+        return; // Transfer was cancelled
+      }
+      
+      const shouldFail = Math.random() < this.FAILURE_RATE;
+      
+      if (shouldFail) {
+        transfer.status = "failed";
+        transfer.errorCode = this.getRandomErrorCode();
+        transfer.errorMessage = this.getErrorMessage(transfer.errorCode!);
+      } else {
+        transfer.status = "complete";
+        transfer.transactionHash = this.generateMockTxHash();
+        transfer.gasUsed = this.generateGasUsed(isCrossChain);
+        transfer.blockNumber = this.generateBlockNumber();
+        transfer.confirmations = isCrossChain ? 12 : 6;
+      }
+      
+      transfer.updateDate = new Date().toISOString();
+      this.transfers.set(transfer.id, transfer);
+      this.pendingTransfers.delete(transfer.id);
+      
+    }, finalDelay);
+  }
+  
+  private getRandomErrorCode(): string {
+    const errorCodes = [
+      "INSUFFICIENT_FUNDS",
+      "NETWORK_CONGESTION",
+      "INVALID_DESTINATION",
+      "RATE_LIMIT_EXCEEDED",
+      "TEMPORARY_UNAVAILABLE",
+    ];
+    return errorCodes[Math.floor(Math.random() * errorCodes.length)];
+  }
+  
+  private getErrorMessage(errorCode: string): string {
+    const messages = {
+      "INSUFFICIENT_FUNDS": "Wallet balance insufficient for transfer amount plus fees",
+      "NETWORK_CONGESTION": "Network congestion caused transfer timeout",
+      "INVALID_DESTINATION": "Destination address validation failed",
+      "RATE_LIMIT_EXCEEDED": "Transfer rate limit exceeded, please wait before retrying",
+      "TEMPORARY_UNAVAILABLE": "Service temporarily unavailable, please retry",
+    };
+    return messages[errorCode as keyof typeof messages] || "Unknown error occurred";
+  }
+  
+  private generateGasUsed(isCrossChain: boolean): string {
+    const baseGas = isCrossChain ? 150000 : 50000;
+    const variation = Math.random() * 0.2 - 0.1; // ±10%
+    return Math.floor(baseGas * (1 + variation)).toString();
+  }
+  
+  private generateBlockNumber(): number {
+    // Simulate realistic block numbers
+    const baseBlock = 18500000;
+    return baseBlock + Math.floor(Math.random() * 100000);
+  }
+  
+  private generateRandomBalance(min: number, max: number): string {
+    const balance = min + Math.random() * (max - min);
+    return balance.toFixed(2);
   }
 }

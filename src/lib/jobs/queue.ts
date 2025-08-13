@@ -130,8 +130,17 @@ export async function addConditionCheckJob() {
     }
   }
   
-  // Fallback: log that periodic checks are disabled
-  console.warn('Redis unavailable, periodic condition checks disabled');
+  // Fallback: Process condition check immediately if Redis unavailable
+  if (!isRedisAvailable) {
+    console.log('Redis unavailable, processing condition check immediately');
+    try {
+      const { processConditionCheckJob } = await import('@/lib/jobs/worker');
+      await processConditionCheckJob({ timestamp: new Date().toISOString() });
+    } catch (error) {
+      console.error('Failed to process condition check directly:', error);
+    }
+  }
+  
   return null;
 }
 

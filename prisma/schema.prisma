@@ -20,12 +20,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  wallets       Wallet[]
-  contacts      Contact[]
-  rules         Rule[]
-  webhookEvents WebhookEvent[]
+  accounts       Account[]
+  sessions       Session[]
+  wallets        Wallet[]
+  contacts       Contact[]
+  rules          Rule[]
+  webhookEvents  WebhookEvent[]
+  auditLogs      AuditLog[]
+  securityAlerts SecurityAlert[]
 
   @@map("users")
 }
@@ -179,4 +181,45 @@ model WebhookEvent {
   user User? @relation(fields: [userId], references: [id])
 
   @@map("webhook_events")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json     @default("{}")
+  severity   String   // LOW, MEDIUM, HIGH, CRITICAL
+  category   String   // AUTH, RULE, EXECUTION, FINANCIAL, SYSTEM, SECURITY
+  timestamp  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([severity])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model SecurityAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  alertType   String
+  description String
+  severity    String   // LOW, MEDIUM, HIGH, CRITICAL
+  metadata    Json     @default("{}")
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([severity])
+  @@index([resolved])
+  @@index([createdAt])
+  @@map("security_alerts")
 }

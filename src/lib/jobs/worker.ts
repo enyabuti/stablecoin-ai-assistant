@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { connection, ExecuteRuleJob, CheckConditionsJob } from "./queue";
 import { createRouter } from "@/lib/routing/router";
 import { MockCircleClient } from "@/lib/mocks/circleMock";
+import { conditionChecker } from "./conditionChecker";
 import { env } from "@/lib/env";
 import { nanoid } from "nanoid";
 import type { RuleJSON } from "@/lib/llm/schema";
@@ -81,7 +82,7 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
         });
       }
       
-      // Resolve destination address
+      // Resolve and validate destination address
       let destinationAddress = ruleJson.destination.value;
       if (ruleJson.destination.type === "contact") {
         const contact = await db.contact.findUnique({
@@ -100,7 +101,27 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
         destinationAddress = contact.address;
       }
       
-      // Execute transfer via Circle
+      // Validate destination address
+      if (!circleClient.validateAddress(destinationAddress, bestRoute.chain)) {
+        throw new Error(`Invalid destination address: ${destinationAddress}`);
+      }
+      
+      // Get fresh wallet balance before transfer
+      const freshWallet = await circleClient.refreshWalletBalance(wallet.circleWalletId!);
+      const usdcBalance = parseFloat(freshWallet.balances.find(b => b.currency === "USDC")?.amount || "0");
+      const transferAmount = parseFloat(ruleJson.amount.value.toString());
+      
+      // Safety check: ensure sufficient balance (with buffer for fees)
+      const estimatedFee = bestRoute.feeEstimateUsd;
+      if (usdcBalance < transferAmount + estimatedFee + 5) { // $5 buffer
+        throw new Error(`Insufficient balance: ${usdcBalance} USDC available, need ${transferAmount + estimatedFee + 5} USDC (including fees and buffer)`);
+      }
+      
+      // Get transfer time estimate
+      const timeEstimate = await circleClient.estimateTransferTime(bestRoute.chain);
+      console.log(`Estimated transfer time: ${timeEstimate.typical} minutes (${timeEstimate.min}-${timeEstimate.max} min range)`);
+      
+      // Execute transfer via Circle with enhanced error handling
       const transfer = await circleClient.transferUSDC({
         walletId: wallet.circleWalletId!,
         destinationAddress,
@@ -109,15 +130,26 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
         idempotencyKey: `${idempotencyKey}-transfer`,
       });
       
-      // Update execution with success
+      console.log(`Transfer initiated: ${transfer.id} (${transfer.status})`);
+      
+      // Log wallet access
+      await auditLogger.logWalletAccess(userId, wallet.id, "TRANSFER_INITIATED");
+      
+      // Update execution with comprehensive transfer info
       await db.execution.update({
         where: { id: execution.id },
         data: {
-          status: "COMPLETED",
+          status: transfer.status === "complete" ? "COMPLETED" : "PROCESSING",
           txHash: transfer.transactionHash || null,
           walletId: wallet.id,
+          errorMessage: transfer.errorMessage || null,
         },
       });
+      
+      // If transfer is still processing, we'll update it later via webhook or polling
+      if (transfer.status === "pending" || transfer.status === "running") {
+        console.log(`Transfer ${transfer.id} is ${transfer.status}, will be updated when completed`);
+      }
       
       // Update rule's last run time
       await db.rule.update({
@@ -127,21 +159,50 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
       
       return { 
         executionId: execution.id, 
-        status: "success", 
-        transferId: transfer.id 
+        status: transfer.status === "complete" ? "success" : "processing", 
+        transferId: transfer.id,
+        transferStatus: transfer.status,
+        estimatedTime: timeEstimate.typical,
+        txHash: transfer.transactionHash,
       };
       
     } catch (error) {
-      console.error("Execute rule job failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error("Execute rule job failed:", { ruleId, userId, error: errorMessage });
       
-      // Update execution with failure
+      // Enhanced error categorization
+      let errorCategory = "SYSTEM_ERROR";
+      if (errorMessage.includes("Insufficient balance")) {
+        errorCategory = "INSUFFICIENT_FUNDS";
+      } else if (errorMessage.includes("Invalid destination")) {
+        errorCategory = "INVALID_ADDRESS";
+      } else if (errorMessage.includes("not found")) {
+        errorCategory = "NOT_FOUND";
+      } else if (errorMessage.includes("rate limit")) {
+        errorCategory = "RATE_LIMITED";
+      }
+      
+      // Update execution with detailed failure info
       await db.execution.updateMany({
         where: { idempotencyKey },
         data: {
           status: "FAILED",
-          errorMessage: error instanceof Error ? error.message : "Unknown error",
+          errorMessage,
         },
       });
+      
+      // For certain errors, pause the rule temporarily
+      if (errorCategory === "INSUFFICIENT_FUNDS" || errorCategory === "RATE_LIMITED") {
+        await db.rule.update({
+          where: { id: ruleId },
+          data: { 
+            status: "PAUSED",
+            // Resume after 1 hour for rate limits, 24 hours for insufficient funds
+            nextRunAt: new Date(Date.now() + (errorCategory === "RATE_LIMITED" ? 3600000 : 86400000))
+          },
+        });
+        console.log(`Rule ${ruleId} temporarily paused due to ${errorCategory}`);
+      }
       
       throw error;
     }
@@ -156,74 +217,56 @@ export const executeRuleWorker = connection ? new Worker<ExecuteRuleJob>(
   { connection }
 ) : null;
 
-// Condition Check Worker (only create if connection exists)
+// Enhanced Condition Check Worker with sophisticated condition monitoring
 export const conditionCheckWorker = connection ? new Worker<CheckConditionsJob>(
   "condition-check",
   async (job: Job<CheckConditionsJob>) => {
     const { timestamp } = job.data;
     
-    // Get all active conditional rules
-    const conditionalRules = await db.rule.findMany({
-      where: {
-        status: "ACTIVE",
-        type: "conditional",
-      },
-    });
-    
-    const triggered = [];
-    
-    for (const rule of conditionalRules) {
-      const ruleJson = rule.json as RuleJSON;
+    try {
+      // Use the sophisticated condition checker
+      const result = await conditionChecker.checkAllConditions();
       
-      if (!ruleJson.condition) continue;
-      
-      // Mock condition checking (replace with real FX oracle)
-      const shouldTrigger = await checkCondition(ruleJson.condition);
-      
-      if (shouldTrigger) {
-        // Add execution job
-        const idempotencyKey = `cond-${rule.id}-${Date.now()}-${nanoid(8)}`;
-        
-        // Add to execution queue
-        const { addExecuteRuleJob } = await import("./queue");
-        await addExecuteRuleJob({
-          ruleId: rule.id,
-          userId: rule.userId,
-          idempotencyKey,
-          triggeredBy: "condition",
-        });
-        
-        triggered.push(rule.id);
+      if (result.triggered.length > 0) {
+        console.log(`🎯 Condition check triggered ${result.triggered.length} rules:`, result.triggered);
       }
+      
+      console.log(`📊 Condition monitoring: ${result.rulesChecked} rules checked, ${result.conditions.length} conditions tracked`);
+      
+      return {
+        checkedAt: timestamp,
+        rulesChecked: result.rulesChecked,
+        triggered: result.triggered,
+        conditions: result.conditions,
+        fxRates: Array.from(conditionChecker.getFxRates().entries()).map(([pair, rate]) => ({ pair, ...rate })),
+      };
+    } catch (error) {
+      console.error('❌ Condition check worker error:', error);
+      throw error;
     }
-    
-    return { 
-      checkedAt: timestamp, 
-      rulesChecked: conditionalRules.length, 
-      triggered 
-    };
   },
   { connection }
 ) : null;
 
-async function checkCondition(condition: RuleJSON["condition"]): Promise<boolean> {
-  if (!condition) return false;
-  
-  // Mock FX oracle - in real implementation, fetch from actual FX API
-  const mockCurrentRate = 1.0500 + (Math.random() - 0.5) * 0.02; // ±1% variance
-  const mock24hAgoRate = 1.0500;
-  const changePercent = ((mockCurrentRate - mock24hAgoRate) / mock24hAgoRate) * 100;
-  
-  if (condition.metric === "EURUSD") {
-    if (condition.change === "+%" && changePercent >= condition.magnitude) {
-      return true;
-    }
-    if (condition.change === "-%" && Math.abs(changePercent) >= condition.magnitude && changePercent < 0) {
-      return true;
-    }
+// Extracted job processing for condition check fallback execution
+export async function processConditionCheckJob(data: CheckConditionsJob) {
+  try {
+    // Use the sophisticated condition checker
+    const result = await conditionChecker.checkAllConditions();
+    
+    console.log(`Fallback condition check: ${result.rulesChecked} rules checked, ${result.triggered.length} triggered`);
+    
+    return {
+      checkedAt: data.timestamp,
+      rulesChecked: result.rulesChecked,
+      triggered: result.triggered,
+      conditions: result.conditions,
+      fxRates: Array.from(conditionChecker.getFxRates().entries()).map(([pair, rate]) => ({ pair, ...rate })),
+    };
+  } catch (error) {
+    console.error('Condition check processing error:', error);
+    throw error;
   }
-  
-  return false;
 }
 
 export function startWorkers() {
