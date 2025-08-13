@@ -3,8 +3,9 @@ import { resolve } from 'path';
 
 export default defineConfig({
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     exclude: ['tests/e2e/**', 'node_modules/**'],
+    setupFiles: ['./tests/setup.ts'],
   },
   resolve: {
     alias: {
