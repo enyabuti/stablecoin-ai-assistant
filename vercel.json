@@ -1,4 +1,5 @@
 {
+  "name": "ferrow",
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
@@ -19,19 +20,5 @@
   },
   "regions": ["iad1"],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "checks": [
-    {
-      "name": "Health Check",
-      "path": "/api/health",
-      "initialDelay": "10s",
-      "period": "1m"
-    },
-    {
-      "name": "Deployment Check",
-      "path": "/api/deployment-check",
-      "initialDelay": "15s",
-      "period": "5m"
-    }
-  ]
+  "trailingSlash": false
 }

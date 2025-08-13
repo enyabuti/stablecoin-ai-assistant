@@ -1,4 +1,6 @@
-# Stablecoin AI Assistant
+# Ferrow
+
+Ferry funds across chains, automatically.
 
 A minimal, secure, production-quality MVP for AI-powered stablecoin automation that runs locally with mocked services by default and can connect to Circle Programmable Wallets in minutes.
 
@@ -201,6 +203,9 @@ npm run type-check      # TypeScript checking
 | `USE_MOCKS` | ❌ | Enable mock providers (default: true) |
 | `CIRCLE_API_KEY` | ❌ | Circle Programmable Wallets API key |
 | `OPENAI_API_KEY` | ❌ | OpenAI API key for GPT models |
+| `NEXT_PUBLIC_APP_NAME` | ❌ | App name (default: Ferrow) |
+| `NEXT_PUBLIC_APP_TAGLINE` | ❌ | App tagline (default: Ferry funds across chains, automatically.) |
+| `NEXT_PUBLIC_APP_URL` | ❌ | App URL for metadata |
 
 ### Feature Flags
 

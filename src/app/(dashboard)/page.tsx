@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ChatComposer } from "@/components/ChatComposer";
+import { APP_NAME, APP_TAGLINE } from "@/lib/appConfig";
 import {
   DollarSign,
   Activity,
@@ -82,14 +85,14 @@ export default function DashboardPage() {
         <div className="max-w-4xl mx-auto">
           {/* Welcome Section - Only shown when no conversation */}
           <div className="text-center py-12 px-6">
-            <div className="w-20 h-20 mx-auto mb-6 bg-hero-gradient rounded-3xl flex items-center justify-center shadow-glass">
-              <Sparkles className="w-10 h-10 text-white" />
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-primary rounded-3xl flex items-center justify-center shadow-glass glow-effect">
+              <Sparkles className="w-10 h-10 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold bg-hero-gradient bg-clip-text text-transparent mb-4">
-              Stablecoin AI Assistant
+            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+              {APP_NAME}
             </h1>
-            <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-              Your intelligent companion for stablecoin automation, cross-chain transfers, and DeFi management.
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              {APP_TAGLINE}
             </p>
             
             {/* Quick Action Cards */}
@@ -97,19 +100,19 @@ export default function DashboardPage() {
               {quickActions.map((action, index) => (
                 <button
                   key={index}
-                  className="glass-card p-6 rounded-2xl border border-white/20 hover:border-white/30 text-left transition-all duration-200 hover:scale-105 hover:shadow-glass-hover group"
+                  className="glass-card p-6 rounded-2xl text-left hover-lift group animate-fade-in"
                   onClick={() => {
                     // This would trigger sending the command to chat
                     console.log(`Sending: ${action.command}`);
                   }}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-hero-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <action.icon className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 smooth-transition">
+                      <action.icon className="w-6 h-6 text-primary-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-800 mb-1">{action.label}</h3>
-                      <p className="text-sm text-slate-600">{action.description}</p>
+                      <h3 className="font-semibold text-card-foreground mb-1">{action.label}</h3>
+                      <p className="text-sm text-muted-foreground">{action.description}</p>
                     </div>
                   </div>
                 </button>
@@ -129,27 +132,27 @@ export default function DashboardPage() {
                   <div
                     className={`p-6 rounded-3xl ${
                       message.type === 'user'
-                        ? 'bg-hero-gradient text-white shadow-glass'
-                        : 'glass-card border border-white/20 shadow-glass'
+                        ? 'message-user'
+                        : 'message-assistant'
                     }`}
                   >
                     {/* Avatar */}
                     <div className="flex items-start gap-4">
                       <div className={`w-8 h-8 rounded-2xl flex items-center justify-center flex-shrink-0 ${
                         message.type === 'user' 
-                          ? 'bg-white/20' 
-                          : 'bg-hero-gradient'
+                          ? 'bg-primary-foreground/20' 
+                          : 'bg-gradient-primary'
                       }`}>
                         {message.type === 'user' ? (
-                          <span className="text-sm font-bold text-white">You</span>
+                          <span className="text-sm font-bold text-primary-foreground">You</span>
                         ) : (
-                          <Sparkles className="w-4 h-4 text-white" />
+                          <Sparkles className="w-4 h-4 text-primary-foreground" />
                         )}
                       </div>
                       
                       <div className="flex-1">
                         <div className={`prose prose-sm max-w-none ${
-                          message.type === 'user' ? 'text-white' : 'text-slate-700'
+                          message.type === 'user' ? 'text-primary-foreground' : 'text-card-foreground'
                         }`}>
                           {message.message.split('\n').map((line, i) => (
                             <p key={i} className="mb-2 last:mb-0">{line}</p>
@@ -159,27 +162,27 @@ export default function DashboardPage() {
                         {/* Data Cards for Assistant Messages */}
                         {message.type === 'assistant' && message.data && (
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                              <p className="text-xs text-slate-600 mb-1">Balance</p>
-                              <p className="font-bold text-slate-800">{message.data.balance}</p>
+                            <div className="glass-card-strong rounded-xl p-3">
+                              <p className="text-xs text-muted-foreground mb-1">Balance</p>
+                              <p className="font-bold text-card-foreground">{message.data.balance}</p>
                             </div>
-                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                              <p className="text-xs text-slate-600 mb-1">Change</p>
-                              <p className="font-bold text-green-600">{message.data.change}</p>
+                            <div className="glass-card-strong rounded-xl p-3">
+                              <p className="text-xs text-muted-foreground mb-1">Change</p>
+                              <p className="font-bold text-success">{message.data.change}</p>
                             </div>
-                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                              <p className="text-xs text-slate-600 mb-1">Executions</p>
-                              <p className="font-bold text-slate-800">{message.data.executions}</p>
+                            <div className="glass-card-strong rounded-xl p-3">
+                              <p className="text-xs text-muted-foreground mb-1">Executions</p>
+                              <p className="font-bold text-card-foreground">{message.data.executions}</p>
                             </div>
-                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                              <p className="text-xs text-slate-600 mb-1">Avg Fee</p>
-                              <p className="font-bold text-slate-800">{message.data.avgFee}</p>
+                            <div className="glass-card-strong rounded-xl p-3">
+                              <p className="text-xs text-muted-foreground mb-1">Avg Fee</p>
+                              <p className="font-bold text-card-foreground">{message.data.avgFee}</p>
                             </div>
                           </div>
                         )}
                         
                         <p className={`text-xs mt-3 ${
-                          message.type === 'user' ? 'text-white/70' : 'text-slate-500'
+                          message.type === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                         }`}>
                           {message.timestamp}
                         </p>
@@ -194,7 +197,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Chat Input Area */}
-      <div className="border-t border-white/20 bg-white/5 backdrop-blur-sm">
+      <div className="border-t border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto p-6">
           <ChatComposer />
         </div>

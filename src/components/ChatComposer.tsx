@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Paperclip, Mic } from "lucide-react";
+import { APP_NAME } from "@/lib/appConfig";
 
 interface ChatComposerProps {
   onSendMessage?: (message: string) => void;
@@ -60,7 +61,7 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
           type="button"
           variant="ghost"
           size="icon"
-          className="flex-shrink-0 w-10 h-10 rounded-2xl text-slate-500 hover:text-slate-700 hover:bg-white/20"
+          className="flex-shrink-0 w-10 h-10 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 smooth-transition"
         >
           <Paperclip className="w-5 h-5" />
         </Button>
@@ -70,8 +71,8 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Message Stablecoin AI..."
-            className="w-full h-12 pl-4 pr-12 rounded-3xl border-2 border-white/20 bg-white/10 backdrop-blur-sm text-slate-800 placeholder:text-slate-500 focus:border-white/40 focus:bg-white/20 shadow-glass"
+            placeholder={`Message ${APP_NAME}...`}
+            className="input-glass w-full h-12 pl-4 pr-12 rounded-3xl text-foreground placeholder:text-muted-foreground"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -85,7 +86,7 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
             type="button"
             variant="ghost"
             size="icon"
-            className="absolute right-2 top-1 w-8 h-8 rounded-2xl text-slate-500 hover:text-slate-700 hover:bg-white/20"
+            className="absolute right-2 top-1 w-8 h-8 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 smooth-transition"
           >
             <Mic className="w-4 h-4" />
           </Button>
@@ -95,7 +96,7 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
         <Button
           type="submit"
           disabled={!input.trim() || isProcessing}
-          className="flex-shrink-0 w-12 h-12 rounded-3xl bg-hero-gradient hover:shadow-glass-hover transform hover:scale-105 transition-all duration-200 text-white border-0 disabled:opacity-50 disabled:transform-none"
+          className="btn-primary flex-shrink-0 w-12 h-12 rounded-3xl border-0 disabled:opacity-50 disabled:transform-none"
         >
           {isProcessing ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -116,7 +117,7 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError }: ChatCompo
           <button
             key={index}
             onClick={() => setInput(suggestion)}
-            className="px-3 py-1.5 text-xs rounded-full bg-white/10 text-slate-600 hover:bg-white/20 hover:text-slate-800 transition-all duration-200 border border-white/20"
+            className="px-3 py-1.5 text-xs rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground smooth-transition border border-border"
           >
             {suggestion}
           </button>
