@@ -2,97 +2,54 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Send } from "lucide-react";
-import type { RuleJSON } from "@/lib/llm/schema";
+import { Input } from "@/components/ui/input";
+import { Send, Paperclip, Mic } from "lucide-react";
 
 interface ChatComposerProps {
-  onRuleParsed?: (rule: RuleJSON) => void;
-  onError?: (error: string) => void;
+  onSendMessage?: (message: string) => void;
 }
 
-export function ChatComposer({ onRuleParsed, onError }: ChatComposerProps) {
+export function ChatComposer({ onSendMessage }: ChatComposerProps) {
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isProcessing) return;
 
     const userMessage = input.trim();
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setInput("");
     setIsProcessing(true);
 
-    try {
-      const response = await fetch("/api/chat/parse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
-      });
+    // Call the parent handler
+    onSendMessage?.(userMessage);
 
-      const data = await response.json();
-
-      if (data.error) {
-        setMessages(prev => [...prev, { 
-          role: "assistant", 
-          content: data.needsClarification || data.error 
-        }]);
-        onError?.(data.error);
-      } else if (data.rule) {
-        setMessages(prev => [...prev, { 
-          role: "assistant", 
-          content: "Great! I've parsed your request into a rule. You can review and edit it in the form." 
-        }]);
-        onRuleParsed?.(data.rule);
-      }
-    } catch (error) {
-      const errorMsg = "Failed to parse your request. Please try again.";
-      setMessages(prev => [...prev, { role: "assistant", content: errorMsg }]);
-      onError?.(errorMsg);
-    } finally {
+    // Simulate processing delay
+    setTimeout(() => {
       setIsProcessing(false);
-    }
+    }, 1000);
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardContent className="flex-1 flex flex-col p-4">
-        <div className="flex-1 space-y-4 mb-4 max-h-64 overflow-y-auto">
-          {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <Sparkles className="w-8 h-8 mx-auto mb-2 text-brand" />
-              <p className="text-sm">
-                Describe what you want to automate...
-              </p>
-              <p className="text-xs mt-1 opacity-75">
-                e.g., &quot;Send $50 USDC to John every Friday at 8am&quot;
-              </p>
-            </div>
-          ) : (
-            messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`p-3 rounded-xl text-sm ${
-                  msg.role === "user"
-                    ? "bg-brand text-white ml-8"
-                    : "bg-bg-elevated mr-8"
-                }`}
-              >
-                {msg.content}
-              </div>
-            ))
-          )}
-        </div>
-        
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Textarea
+    <div className="relative">
+      <form onSubmit={handleSubmit} className="flex items-center gap-3">
+        {/* Attachment Button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0 w-10 h-10 rounded-2xl text-slate-500 hover:text-slate-700 hover:bg-white/20"
+        >
+          <Paperclip className="w-5 h-5" />
+        </Button>
+
+        {/* Main Input */}
+        <div className="flex-1 relative">
+          <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your automation rule..."
-            className="min-h-[60px] resize-none"
+            placeholder="Message Stablecoin AI..."
+            className="w-full h-12 pl-4 pr-12 rounded-3xl border-2 border-white/20 bg-white/10 backdrop-blur-sm text-slate-800 placeholder:text-slate-500 focus:border-white/40 focus:bg-white/20 shadow-glass"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -100,21 +57,49 @@ export function ChatComposer({ onRuleParsed, onError }: ChatComposerProps) {
               }
             }}
           />
+          
+          {/* Voice Input Button */}
           <Button
-            type="submit"
-            disabled={!input.trim() || isProcessing}
-            variant="gradient"
+            type="button"
+            variant="ghost"
             size="icon"
-            className="shrink-0 h-[60px] w-12"
+            className="absolute right-2 top-1 w-8 h-8 rounded-2xl text-slate-500 hover:text-slate-700 hover:bg-white/20"
           >
-            {isProcessing ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
+            <Mic className="w-4 h-4" />
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+
+        {/* Send Button */}
+        <Button
+          type="submit"
+          disabled={!input.trim() || isProcessing}
+          className="flex-shrink-0 w-12 h-12 rounded-3xl bg-hero-gradient hover:shadow-glass-hover transform hover:scale-105 transition-all duration-200 text-white border-0 disabled:opacity-50 disabled:transform-none"
+        >
+          {isProcessing ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Send className="w-5 h-5" />
+          )}
+        </Button>
+      </form>
+      
+      {/* Suggestions */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {[
+          "Check my balance",
+          "Send $100 USDC",
+          "Create a new rule",
+          "Show recent transfers"
+        ].map((suggestion, index) => (
+          <button
+            key={index}
+            onClick={() => setInput(suggestion)}
+            className="px-3 py-1.5 text-xs rounded-full bg-white/10 text-slate-600 hover:bg-white/20 hover:text-slate-800 transition-all duration-200 border border-white/20"
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

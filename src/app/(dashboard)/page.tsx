@@ -1,189 +1,203 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Kpi } from "@/components/Kpi";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { ChatComposer } from "@/components/ChatComposer";
 import {
   DollarSign,
   Activity,
   Clock,
   TrendingUp,
-  Plus,
-  ArrowRight,
+  Sparkles,
   Zap,
+  Send,
+  Settings,
+  ArrowLeftRight,
 } from "lucide-react";
 
-// Mock data - in real app this would come from API
-const mockKpis = {
-  balance: { value: "$2,847.50", change: { value: "+12.3%", positive: true } },
-  avgFee: { value: "$0.23", change: { value: "-8.2%", positive: true } },
-  executions24h: { value: "47", change: { value: "+23.1%", positive: true } },
-  scheduled: { value: "12" },
-};
-
-const mockRecentActivity = [
+// Mock conversation data
+const mockConversation = [
   {
     id: "1",
-    type: "Send $50 USDC to John",
-    status: "completed",
-    chain: "Base",
-    fee: "$0.05",
+    type: "user",
+    message: "Show me my portfolio balance",
     timestamp: "2 min ago",
   },
   {
-    id: "2", 
-    type: "EUR/USD condition check",
-    status: "monitoring",
-    chain: "Polygon",
-    fee: "$0.12",
-    timestamp: "5 min ago",
+    id: "2",
+    type: "assistant",
+    message: "Your current portfolio balance is $2,847.50, which is up 12.3% from last week. You have 47 automated transactions executed in the last 24 hours with an average fee of $0.23.",
+    timestamp: "2 min ago",
+    data: {
+      balance: "$2,847.50",
+      change: "+12.3%",
+      executions: "47",
+      avgFee: "$0.23"
+    }
   },
   {
     id: "3",
-    type: "Send $25 USDC to Alice", 
-    status: "pending",
-    chain: "Arbitrum",
-    fee: "$0.15",
-    timestamp: "12 min ago",
+    type: "user",
+    message: "Create a rule to send $50 USDC to john@example.com when ETH price goes above $2500",
+    timestamp: "5 min ago",
+  },
+  {
+    id: "4",
+    type: "assistant",
+    message: "I've created a new automation rule for you:\n\n✅ **Trigger**: ETH price > $2,500\n✅ **Action**: Send $50 USDC to john@example.com\n✅ **Network**: Base (lowest fees)\n✅ **Status**: Active and monitoring\n\nThe rule is now live and will execute automatically when the condition is met.",
+    timestamp: "5 min ago",
+  },
+];
+
+const quickActions = [
+  {
+    icon: DollarSign,
+    label: "Check Balance",
+    description: "View portfolio summary",
+    command: "Show me my current balance and recent activity"
+  },
+  {
+    icon: Send,
+    label: "Send Money",
+    description: "Transfer stablecoins",
+    command: "I want to send USDC to someone"
+  },
+  {
+    icon: Sparkles,
+    label: "Create Rule",
+    description: "Set up automation",
+    command: "Help me create a new automation rule"
+  },
+  {
+    icon: ArrowLeftRight,
+    label: "View Transfers",
+    description: "See transaction history",
+    command: "Show me my recent transfers and their status"
   },
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
-      {/* Modern Header with Glass Card */}
-      <div className="glass-card p-8 rounded-3xl shadow-glass">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight bg-hero-gradient bg-clip-text text-transparent mb-2">
-              Welcome back
+    <div className="flex flex-col h-screen">
+      {/* Main Chat Area */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          {/* Welcome Section - Only shown when no conversation */}
+          <div className="text-center py-12 px-6">
+            <div className="w-20 h-20 mx-auto mb-6 bg-hero-gradient rounded-3xl flex items-center justify-center shadow-glass">
+              <Sparkles className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold bg-hero-gradient bg-clip-text text-transparent mb-4">
+              Stablecoin AI Assistant
             </h1>
-            <p className="text-lg text-slate-600">
-              Manage your stablecoin automation rules and monitor activity
+            <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+              Your intelligent companion for stablecoin automation, cross-chain transfers, and DeFi management.
             </p>
+            
+            {/* Quick Action Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
+              {quickActions.map((action, index) => (
+                <button
+                  key={index}
+                  className="glass-card p-6 rounded-2xl border border-white/20 hover:border-white/30 text-left transition-all duration-200 hover:scale-105 hover:shadow-glass-hover group"
+                  onClick={() => {
+                    // This would trigger sending the command to chat
+                    console.log(`Sending: ${action.command}`);
+                  }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-hero-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <action.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-800 mb-1">{action.label}</h3>
+                      <p className="text-sm text-slate-600">{action.description}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
-          <Button 
-            asChild 
-            className="h-12 px-6 bg-hero-gradient hover:shadow-glass-hover transform hover:scale-105 transition-all duration-200 text-white border-0"
-          >
-            <Link href="/rules/new">
-              <Plus className="w-5 h-5 mr-2" />
-              Create Rule
-            </Link>
-          </Button>
+
+          {/* Conversation History */}
+          <div className="space-y-6 px-6 pb-6">
+            {mockConversation.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`max-w-3xl ${message.type === 'user' ? 'ml-12' : 'mr-12'}`}>
+                  {/* Message Bubble */}
+                  <div
+                    className={`p-6 rounded-3xl ${
+                      message.type === 'user'
+                        ? 'bg-hero-gradient text-white shadow-glass'
+                        : 'glass-card border border-white/20 shadow-glass'
+                    }`}
+                  >
+                    {/* Avatar */}
+                    <div className="flex items-start gap-4">
+                      <div className={`w-8 h-8 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                        message.type === 'user' 
+                          ? 'bg-white/20' 
+                          : 'bg-hero-gradient'
+                      }`}>
+                        {message.type === 'user' ? (
+                          <span className="text-sm font-bold text-white">You</span>
+                        ) : (
+                          <Sparkles className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className={`prose prose-sm max-w-none ${
+                          message.type === 'user' ? 'text-white' : 'text-slate-700'
+                        }`}>
+                          {message.message.split('\n').map((line, i) => (
+                            <p key={i} className="mb-2 last:mb-0">{line}</p>
+                          ))}
+                        </div>
+                        
+                        {/* Data Cards for Assistant Messages */}
+                        {message.type === 'assistant' && message.data && (
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                              <p className="text-xs text-slate-600 mb-1">Balance</p>
+                              <p className="font-bold text-slate-800">{message.data.balance}</p>
+                            </div>
+                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                              <p className="text-xs text-slate-600 mb-1">Change</p>
+                              <p className="font-bold text-green-600">{message.data.change}</p>
+                            </div>
+                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                              <p className="text-xs text-slate-600 mb-1">Executions</p>
+                              <p className="font-bold text-slate-800">{message.data.executions}</p>
+                            </div>
+                            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                              <p className="text-xs text-slate-600 mb-1">Avg Fee</p>
+                              <p className="font-bold text-slate-800">{message.data.avgFee}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <p className={`text-xs mt-3 ${
+                          message.type === 'user' ? 'text-white/70' : 'text-slate-500'
+                        }`}>
+                          {message.timestamp}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Kpi
-          title="Total Balance"
-          value={mockKpis.balance.value}
-          change={mockKpis.balance.change}
-          icon={<DollarSign className="w-4 h-4" />}
-        />
-        <Kpi
-          title="Avg Fee"
-          value={mockKpis.avgFee.value}
-          change={mockKpis.avgFee.change}
-          icon={<TrendingUp className="w-4 h-4" />}
-        />
-        <Kpi
-          title="24h Executions"
-          value={mockKpis.executions24h.value}
-          change={mockKpis.executions24h.change}
-          icon={<Activity className="w-4 h-4" />}
-        />
-        <Kpi
-          title="Scheduled"
-          value={mockKpis.scheduled.value}
-          icon={<Clock className="w-4 h-4" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Enhanced Recent Activity */}
-        <Card className="glass-card rounded-3xl shadow-glass border-white/20">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center justify-between text-2xl font-bold text-slate-800">
-              Recent Activity
-              <Button variant="ghost" size="sm" asChild className="text-slate-600 hover:text-slate-800 hover:bg-white/20">
-                <Link href="/transfers">
-                  View All
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Link>
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mockRecentActivity.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20 hover:bg-white/40 transition-all duration-200">
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-slate-800">{item.type}</p>
-                    <div className="flex items-center gap-2 text-xs text-slate-600">
-                      <span className="font-medium">{item.chain}</span>
-                      <span>•</span>
-                      <span>{item.fee}</span>
-                      <span>•</span>
-                      <span>{item.timestamp}</span>
-                    </div>
-                  </div>
-                  <Badge
-                    className={`${
-                      item.status === "completed" 
-                        ? "bg-green-100 text-green-800 border-green-200" 
-                        : item.status === "pending" 
-                        ? "bg-yellow-100 text-yellow-800 border-yellow-200" 
-                        : "bg-blue-100 text-blue-800 border-blue-200"
-                    } font-medium`}
-                  >
-                    {item.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Enhanced Quick Actions */}
-        <Card className="glass-card rounded-3xl shadow-glass border-white/20">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-2xl font-bold text-slate-800">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Button asChild className="w-full justify-start h-16 bg-hero-gradient hover:shadow-glass-hover transform hover:scale-105 transition-all duration-200 text-white border-0 rounded-2xl">
-                <Link href="/rules/new">
-                  <Plus className="w-5 h-5 mr-4" />
-                  <div className="text-left">
-                    <div className="font-semibold text-base">Create New Rule</div>
-                    <div className="text-sm opacity-90">Set up automation</div>
-                  </div>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" className="w-full justify-start h-16 bg-white/20 border-white/30 text-slate-700 hover:bg-white/30 hover:text-slate-800 backdrop-blur-sm rounded-2xl transform hover:scale-105 transition-all duration-200">
-                <Zap className="w-5 h-5 mr-4" />
-                <div className="text-left">
-                  <div className="font-semibold text-base">Test Transfer</div>
-                  <div className="text-sm opacity-75">Send a test transaction</div>
-                </div>
-              </Button>
-
-              <Button variant="ghost" asChild className="w-full justify-start h-16 text-slate-600 hover:text-slate-800 hover:bg-white/20 rounded-2xl transform hover:scale-105 transition-all duration-200">
-                <Link href="/rules">
-                  <Activity className="w-5 h-5 mr-4" />
-                  <div className="text-left">
-                    <div className="font-semibold text-base">View All Rules</div>
-                    <div className="text-sm opacity-75">Manage automations</div>
-                  </div>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Chat Input Area */}
+      <div className="border-t border-white/20 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto p-6">
+          <ChatComposer />
+        </div>
       </div>
     </div>
   );
