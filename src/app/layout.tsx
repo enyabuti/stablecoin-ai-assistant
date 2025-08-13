@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { APP_NAME, APP_TAGLINE, APP_URL } from "@/lib/appConfig";
+import { Providers } from "@/components/Providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,11 +40,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        <div className="min-h-screen bg-chatgpt-gradient">
-          <div className="min-h-screen backdrop-blur-xs">
-            {children}
+        <Providers>
+          <div className="min-h-screen bg-chatgpt-gradient">
+            <div className="min-h-screen backdrop-blur-xs">
+              {children}
+            </div>
           </div>
-        </div>
+        </Providers>
       </body>
     </html>
   );

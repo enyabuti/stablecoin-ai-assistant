@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AuthButton } from "@/components/AuthButton";
 
 const navigation = [
   {
@@ -102,9 +103,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground smooth-transition">
-              <Settings className="w-4 h-4" />
-            </Button>
+            <AuthButton />
           </div>
         </div>
         

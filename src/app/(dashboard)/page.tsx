@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ChatComposer } from "@/components/ChatComposer";
 import { APP_NAME, APP_TAGLINE } from "@/lib/appConfig";
+import Link from "next/link";
 import {
   DollarSign,
   Activity,
@@ -23,6 +24,7 @@ import {
   Wallet,
   BarChart3,
   Timer,
+  TestTube,
 } from "lucide-react";
 
 // Mock conversation data
@@ -226,6 +228,22 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* Demo Mode Banner */}
+          <div className="px-6 mb-16">
+            <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl max-w-4xl mx-auto">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
+                  <TestTube className="w-3 h-3 text-amber-600" />
+                </div>
+                <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode</h3>
+              </div>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                This is a demonstration version of Ferrow. All balances, fees, and metrics shown are sample data. 
+                No real transactions will be executed until you connect a live wallet and enable production mode.
+              </p>
+            </div>
+          </div>
+
           {/* Features Section */}
           <div className="py-16 px-6">
             <div className="text-center mb-12">
@@ -301,6 +319,9 @@ export default function DashboardPage() {
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Ferrow is designed to handle high-volume operations with enterprise-grade reliability.
               </p>
+              <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
+                * Demo metrics - not based on live data
+              </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
@@ -308,16 +329,16 @@ export default function DashboardPage() {
                 <div className="text-sm text-muted-foreground">Supported Chains</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">$0.05</div>
-                <div className="text-sm text-muted-foreground">Avg Transaction Fee</div>
+                <div className="text-3xl font-bold text-primary mb-2">~$0.05</div>
+                <div className="text-sm text-muted-foreground">Est. Transaction Fee*</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">24/7</div>
                 <div className="text-sm text-muted-foreground">Monitoring</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">2s</div>
-                <div className="text-sm text-muted-foreground">Avg Execution Time</div>
+                <div className="text-3xl font-bold text-primary mb-2">~2s</div>
+                <div className="text-sm text-muted-foreground">Est. Execution Time*</div>
               </div>
             </div>
           </div>
@@ -409,9 +430,11 @@ export default function DashboardPage() {
                 Join the future of crypto automation. Start with our demo mode and upgrade to live trading when you&apos;re ready.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="btn-primary px-8 py-3 text-lg">
-                  <MessageSquare className="w-5 h-5 mr-2" />
-                  Start Chatting
+                <Button asChild className="btn-primary px-8 py-3 text-lg">
+                  <Link href="/rules/new">
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    Start Chatting
+                  </Link>
                 </Button>
                 <Button variant="outline" className="px-8 py-3 text-lg">
                   <Users className="w-5 h-5 mr-2" />
@@ -422,6 +445,35 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/30 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto p-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-muted-foreground">
+              © 2024 {APP_NAME}. All rights reserved.
+            </div>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <Link href="/terms" className="text-muted-foreground hover:text-foreground">
+                Terms of Service
+              </Link>
+              <Link href="/privacy" className="text-muted-foreground hover:text-foreground">
+                Privacy Policy
+              </Link>
+              <Link href="/disclaimer" className="text-muted-foreground hover:text-foreground">
+                Legal Disclaimer
+              </Link>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <p className="text-xs text-amber-600 dark:text-amber-400 text-center">
+              <strong>Important:</strong> This is a demonstration platform. All metrics and balances shown are sample data. 
+              Cryptocurrency transactions involve risk. This software is provided for educational purposes only and does not constitute financial advice. 
+              Use at your own risk in production environments.
+            </p>
+          </div>
+        </div>
+      </footer>
 
       {/* Chat Input Area */}
       <div className="border-t border-border bg-card/50 backdrop-blur-sm">
