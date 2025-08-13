@@ -25,6 +25,7 @@ import {
   BarChart3,
   Timer,
   TestTube,
+  LogIn,
 } from "lucide-react";
 
 // Mock conversation data
@@ -64,27 +65,27 @@ const mockConversation = [
 const quickActions = [
   {
     icon: DollarSign,
-    label: "Check Balance",
-    description: "View portfolio summary",
-    command: "Show me my current balance and recent activity"
+    label: "Sign In",
+    description: "Access your account",
+    href: "/auth/signin"
   },
   {
     icon: Send,
-    label: "Send Money",
-    description: "Transfer stablecoins",
-    command: "I want to send USDC to someone"
+    label: "Try Demo",
+    description: "Explore without signing up",
+    href: "/rules/new"
   },
   {
     icon: Sparkles,
     label: "Create Rule",
     description: "Set up automation",
-    command: "Help me create a new automation rule"
+    href: "/rules/new"
   },
   {
     icon: ArrowLeftRight,
-    label: "View Transfers",
-    description: "See transaction history",
-    command: "Show me my recent transfers and their status"
+    label: "View Features",
+    description: "Learn about capabilities",
+    href: "#features"
   },
 ];
 
@@ -198,21 +199,35 @@ export default function DashboardPage() {
             <p className="text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto">
               {APP_TAGLINE}
             </p>
-            <p className="text-lg text-muted-foreground/80 mb-12 max-w-4xl mx-auto">
+            <p className="text-lg text-muted-foreground/80 mb-8 max-w-4xl mx-auto">
               The AI-powered platform that automates your stablecoin transfers across multiple blockchains. 
               Set up intelligent rules using natural language and let Ferrow handle the rest – 24/7 monitoring, 
               optimal routing, and instant execution.
             </p>
             
+            {/* Get Started CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button asChild size="lg" className="btn-primary px-8 py-4 text-lg">
+                <Link href="/auth/signin">
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Get Started Free
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
+                <Link href="/rules/new">
+                  <TestTube className="w-5 h-5 mr-2" />
+                  Try Demo
+                </Link>
+              </Button>
+            </div>
+            
             {/* Quick Action Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mb-16">
               {quickActions.map((action, index) => (
-                <button
+                <Link
                   key={index}
-                  className="glass-card p-6 rounded-2xl text-left hover-lift group animate-fade-in"
-                  onClick={() => {
-                    console.log(`Sending: ${action.command}`);
-                  }}
+                  href={action.href}
+                  className="glass-card p-6 rounded-2xl text-left hover-lift group animate-fade-in block"
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 smooth-transition">
@@ -223,7 +238,7 @@ export default function DashboardPage() {
                       <p className="text-sm text-muted-foreground">{action.description}</p>
                     </div>
                   </div>
-                </button>
+                </Link>
               ))}
             </div>
           </div>
@@ -245,7 +260,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Features Section */}
-          <div className="py-16 px-6">
+          <div id="features" className="py-16 px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-4">Powerful Features</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -431,14 +446,16 @@ export default function DashboardPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild className="btn-primary px-8 py-3 text-lg">
-                  <Link href="/rules/new">
+                  <Link href="/auth/signin">
                     <MessageSquare className="w-5 h-5 mr-2" />
-                    Start Chatting
+                    Sign In to Start
                   </Link>
                 </Button>
-                <Button variant="outline" className="px-8 py-3 text-lg">
-                  <Users className="w-5 h-5 mr-2" />
-                  Join Community
+                <Button asChild variant="outline" className="px-8 py-3 text-lg">
+                  <Link href="/rules/new">
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Try Demo
+                  </Link>
                 </Button>
               </div>
             </div>
