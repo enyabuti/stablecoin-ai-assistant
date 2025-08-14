@@ -2,186 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Modern GPT-5 inspired design system with sophisticated gradients and glass effects */
+/* Modern Ultra-Clean Design System */
 
 @layer base {
   :root {
-    /* Core Background System - ChatGPT Inspired */
-    --background: 0 0% 99%;
-    --background-secondary: linear-gradient(135deg, hsl(15 100% 95%), hsl(220 100% 96%));
-    --background-tertiary: linear-gradient(135deg, hsl(15 100% 97%), hsl(220 100% 98%));
-    --background-hero: linear-gradient(135deg, hsl(15 100% 92%) 0%, hsl(340 100% 94%) 25%, hsl(260 100% 95%) 50%, hsl(220 100% 94%) 100%);
-    --foreground: 240 10% 3.9%;
-    --foreground-secondary: 240 5% 25%;
+    /* Ultra-Modern Color System */
+    --background: 255 255 255;
+    --background-muted: 249 250 251;
+    --background-subtle: 243 244 246;
+    --foreground: 17 24 39;
+    --foreground-muted: 75 85 99;
+    --foreground-subtle: 156 163 175;
 
-    /* Card System with Glass Effects */
-    --card: 0 0% 100%;
-    --card-secondary: 240 10% 99%;
-    --card-glass: 0 0% 100% / 0.7;
-    --card-foreground: 240 10% 3.9%;
-    --card-border: 240 5% 92%;
+    /* Card System */
+    --card: 255 255 255;
+    --card-hover: 249 250 251;
+    --card-border: 229 231 235;
+    --card-shadow: 0 0 0 1px rgb(0 0 0 / 0.05);
 
-    /* Popover System */
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    /* Primary Brand Colors */
+    --primary: 79 70 229;
+    --primary-hover: 67 56 202;
+    --primary-light: 238 242 255;
+    --primary-foreground: 255 255 255;
 
-    /* Primary Electric Blue System */
-    --primary: 217 91% 60%;
-    --primary-hover: 217 91% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 217 91% 97%;
-    --primary-glow: 217 91% 60% / 0.15;
+    /* Secondary Colors */
+    --secondary: 107 114 128;
+    --secondary-light: 243 244 246;
+    --secondary-foreground: 17 24 39;
 
-    /* Secondary Sophisticated Grays */
-    --secondary: 240 5% 96%;
-    --secondary-hover: 240 5% 94%;
-    --secondary-foreground: 240 10% 3.9%;
+    /* Accent Colors */
+    --accent: 147 51 234;
+    --accent-light: 249 168 212;
+    --success: 34 197 94;
+    --warning: 251 191 36;
+    --destructive: 239 68 68;
 
-    /* Muted Text System */
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --muted-light: 240 5% 98%;
+    /* Border System */
+    --border: 229 231 235;
+    --border-light: 243 244 246;
+    --input: 255 255 255;
+    --ring: 79 70 229;
 
-    /* Accent Purple System */
-    --accent: 260 60% 95%;
-    --accent-hover: 260 60% 92%;
-    --accent-foreground: 260 80% 25%;
-    --accent-primary: 260 80% 65%;
-    --accent-glow: 260 80% 65% / 0.12;
+    /* Modern Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-    /* Success & Status Colors */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --success-light: 142 76% 96%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --warning-light: 38 92% 96%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --destructive-light: 0 84% 96%;
-
-    /* Border & Input System */
-    --border: 240 5% 92%;
-    --border-secondary: 240 5% 88%;
-    --input: 240 5% 96%;
-    --ring: 217 91% 60%;
-
-    /* Advanced Gradients - ChatGPT Style */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(260 80% 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(15 100% 97%), hsl(220 100% 96%));
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.9), hsl(240 10% 99% / 0.7));
-    --gradient-hero: linear-gradient(135deg, hsl(15 100% 92%) 0%, hsl(340 100% 94%) 25%, hsl(260 100% 95%) 50%, hsl(220 100% 94%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.8), hsl(220 60% 98% / 0.9));
-    --gradient-chatgpt: linear-gradient(135deg, hsl(15 100% 94%) 0%, hsl(340 100% 95%) 30%, hsl(260 80% 96%) 70%, hsl(220 100% 95%) 100%);
-
-    /* Shadows System */
-    --shadow-sm: 0 1px 2px 0 hsl(240 5% 0% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(240 5% 0% / 0.1), 0 2px 4px -2px hsl(240 5% 0% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(240 5% 0% / 0.1), 0 4px 6px -4px hsl(240 5% 0% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(240 5% 0% / 0.1), 0 8px 10px -6px hsl(240 5% 0% / 0.1);
-    --shadow-glow: 0 0 30px hsl(217 91% 60% / 0.3);
-    --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.12);
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    /* Core Background System - Dark ChatGPT */
-    --background: 240 10% 3.9%;
-    --background-secondary: linear-gradient(135deg, hsl(240 10% 5%), hsl(260 20% 6%));
-    --background-tertiary: linear-gradient(135deg, hsl(240 10% 7%), hsl(260 20% 8%));
-    --background-hero: linear-gradient(135deg, hsl(240 10% 4%) 0%, hsl(260 30% 5%) 25%, hsl(280 20% 6%) 50%, hsl(220 20% 5%) 100%);
-    --foreground: 0 0% 98%;
-    --foreground-secondary: 240 5% 75%;
+    --background: 9 9 11;
+    --background-muted: 24 24 27;
+    --background-subtle: 39 39 42;
+    --foreground: 250 250 250;
+    --foreground-muted: 161 161 170;
+    --foreground-subtle: 113 113 122;
 
-    /* Card System with Glass Effects */
-    --card: 240 10% 5%;
-    --card-secondary: 240 10% 6%;
-    --card-glass: 240 10% 10% / 0.7;
-    --card-foreground: 0 0% 98%;
-    --card-border: 240 10% 15%;
+    --card: 24 24 27;
+    --card-hover: 39 39 42;
+    --card-border: 63 63 70;
+    --card-shadow: 0 0 0 1px rgb(255 255 255 / 0.05);
 
-    /* Popover System */
-    --popover: 240 10% 5%;
-    --popover-foreground: 0 0% 98%;
+    --primary: 99 102 241;
+    --primary-hover: 129 140 248;
+    --primary-light: 30 27 75;
 
-    /* Primary Electric Blue System */
-    --primary: 217 91% 65%;
-    --primary-hover: 217 91% 70%;
-    --primary-foreground: 240 10% 3.9%;
-    --primary-light: 217 91% 8%;
-    --primary-glow: 217 91% 65% / 0.2;
-
-    /* Secondary Sophisticated Grays */
-    --secondary: 240 10% 10%;
-    --secondary-hover: 240 10% 12%;
-    --secondary-foreground: 0 0% 98%;
-
-    /* Muted Text System */
-    --muted: 240 10% 10%;
-    --muted-foreground: 240 5% 64%;
-    --muted-light: 240 10% 8%;
-
-    /* Accent Purple System */
-    --accent: 260 60% 12%;
-    --accent-hover: 260 60% 15%;
-    --accent-foreground: 260 60% 85%;
-    --accent-primary: 260 80% 70%;
-    --accent-glow: 260 80% 70% / 0.15;
-
-    /* Success & Status Colors */
-    --success: 142 76% 45%;
-    --success-foreground: 240 10% 3.9%;
-    --success-light: 142 76% 8%;
-
-    --warning: 38 92% 55%;
-    --warning-foreground: 240 10% 3.9%;
-    --warning-light: 38 92% 8%;
-
-    --destructive: 0 84% 65%;
-    --destructive-foreground: 240 10% 3.9%;
-    --destructive-light: 0 84% 8%;
-
-    /* Border & Input System */
-    --border: 240 10% 15%;
-    --border-secondary: 240 10% 20%;
-    --input: 240 10% 10%;
-    --ring: 217 91% 65%;
-
-    /* Advanced Gradients - Dark ChatGPT Style */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 65%), hsl(260 80% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(240 10% 8%), hsl(240 10% 5%));
-    --gradient-glass: linear-gradient(135deg, hsl(240 10% 12% / 0.9), hsl(240 10% 8% / 0.7));
-    --gradient-hero: linear-gradient(135deg, hsl(240 10% 4%) 0%, hsl(260 30% 5%) 25%, hsl(280 20% 6%) 50%, hsl(220 20% 5%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(240 10% 6% / 0.8), hsl(260 20% 8% / 0.9));
-    --gradient-chatgpt: linear-gradient(135deg, hsl(240 10% 5%) 0%, hsl(260 30% 6%) 30%, hsl(280 20% 7%) 70%, hsl(220 20% 6%) 100%);
-
-    /* Shadows System */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.15);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -2px hsl(0 0% 0% / 0.15);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.25), 0 4px 6px -4px hsl(0 0% 0% / 0.15);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
-    --shadow-glow: 0 0 30px hsl(217 91% 65% / 0.4);
-    --shadow-glass: 0 8px 32px hsl(0 0% 0% / 0.3);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 63 63 70;
+    --border-light: 39 39 42;
   }
 }
 
@@ -190,136 +80,280 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    background: var(--gradient-chatgpt);
-    background-attachment: fixed;
-    min-height: 100vh;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: -0.005em;
+    line-height: 1.5;
   }
 
-  /* Glass Morphism Utilities */
-  .glass {
-    background: hsl(var(--card-glass));
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border));
+  /* Ultra-Modern Typography Scale */
+  .text-display {
+    @apply text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
-  .glass-strong {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(40px);
-    border: 1px solid hsl(var(--border-secondary));
+  .text-heading {
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
   }
 
-  /* Animation & Interaction Utilities */
-  .smooth-transition {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  .text-subheading {
+    @apply text-xl md:text-2xl font-medium;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
   }
 
-  .hover-lift {
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  .text-body-large {
+    @apply text-lg leading-relaxed;
   }
 
-  .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+  .text-body {
+    @apply text-base leading-relaxed;
   }
 
-  .glow-effect {
-    box-shadow: var(--shadow-glow);
+  .text-body-small {
+    @apply text-sm leading-relaxed;
+  }
+
+  .text-caption {
+    @apply text-xs;
+    color: rgb(var(--foreground-muted));
+  }
+
+  .text-foreground-muted {
+    color: rgb(var(--foreground-muted));
+  }
+
+  .text-foreground-subtle {
+    color: rgb(var(--foreground-subtle));
+  }
+
+  /* Enhanced Button System */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-secondary-foreground bg-secondary-light hover:bg-background-subtle border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200;
+    border-radius: 0.75rem;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200;
+    border-radius: 0.5rem;
+    color: rgb(var(--foreground-muted));
+    background-color: transparent;
+  }
+  
+  .btn-ghost:hover {
+    color: rgb(var(--foreground));
+    background-color: rgb(var(--background-muted));
   }
 }
 
 @layer components {
-  /* Modern Glass Cards */
-  .glass-card {
-    background: var(--gradient-card);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border));
-    box-shadow: var(--shadow-glass);
+  /* Ultra-Modern Card System */
+  .card-modern {
+    @apply bg-card border border-card-border rounded-2xl;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease-out;
   }
 
-  .glass-card-strong {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(40px);
-    border: 1px solid hsl(var(--border-secondary));
-    box-shadow: var(--shadow-xl);
-  }
-
-  /* Primary Gradient Button */
-  .btn-primary {
-    background: var(--gradient-primary);
-    color: hsl(var(--primary-foreground));
-    border: none;
+  .card-modern:hover {
+    @apply border-border-light;
     box-shadow: var(--shadow-md);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .btn-primary:hover {
-    box-shadow: var(--shadow-glow);
     transform: translateY(-1px);
   }
 
-  /* Glass Input */
-  .input-glass {
-    background: hsl(var(--card-glass));
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  .card-interactive {
+    @apply card-modern cursor-pointer;
   }
 
-  .input-glass:focus {
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 3px hsl(var(--primary-glow));
+  .card-interactive:hover {
+    @apply bg-card-hover;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
   }
 
-  /* Sidebar Styles */
-  .sidebar-glass {
-    background: hsl(var(--sidebar-background));
-    backdrop-filter: blur(20px);
-    border-right: 1px solid hsl(var(--sidebar-border));
+  /* Clean Layout Containers */
+  .container-page {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Chat Message Bubbles */
-  .message-user {
-    background: var(--gradient-primary);
-    color: hsl(var(--primary-foreground));
-    border-radius: 1.5rem 1.5rem 0.5rem 1.5rem;
-    box-shadow: var(--shadow-md);
+  .container-content {
+    @apply max-w-4xl mx-auto px-4 sm:px-6;
   }
 
-  .message-assistant {
-    background: var(--gradient-card);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border));
-    border-radius: 1.5rem 1.5rem 1.5rem 0.5rem;
-    box-shadow: var(--shadow-glass);
+  .container-narrow {
+    @apply max-w-2xl mx-auto px-4;
   }
 
-  /* Enhanced Animations */
+  /* Modern Section Spacing */
+  .section-xl {
+    @apply py-20 md:py-24 lg:py-32;
+  }
+
+  .section-lg {
+    @apply py-16 md:py-20;
+  }
+
+  .section-md {
+    @apply py-12 md:py-16;
+  }
+
+  .section-sm {
+    @apply py-8 md:py-12;
+  }
+
+  /* Ultra-Clean Grid Systems */
+  .grid-auto-fit {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  }
+
+  .grid-3 {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .grid-4 {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+  }
+
+  /* Modern Input System */
+  .input-modern {
+    @apply w-full px-4 py-3 text-base bg-input border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200;
+  }
+
+  .input-modern:focus {
+    box-shadow: 0 0 0 3px rgb(var(--primary) / 0.1);
+  }
+
+  /* Clean Badge System */
+  .badge-primary {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-light text-primary;
+  }
+
+  .badge-secondary {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary-light text-secondary;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700;
+  }
+
+  /* Modern Navigation */
+  .nav-link {
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+    color: rgb(var(--foreground-muted));
+  }
+  
+  .nav-link:hover {
+    color: rgb(var(--foreground));
+    background-color: rgb(var(--background-muted));
+  }
+
+  .nav-link.active {
+    color: rgb(var(--primary));
+    background-color: rgb(var(--primary-light));
+  }
+
+  /* Utility Classes */
+  .text-gradient {
+    background: linear-gradient(135deg, rgb(var(--primary)), rgb(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.6s ease-out;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.6s ease-out;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
+    animation: scaleIn 0.3s ease-out;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes scaleIn {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Demo Banner Styling */
+  .demo-banner {
+    @apply bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6;
+  }
+
+  .demo-banner.dark {
+    @apply from-yellow-900/20 to-orange-900/20 border-yellow-800/30;
+  }
+}
+
+/* Focus and accessibility improvements */
+@layer utilities {
+  .focus-visible:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }

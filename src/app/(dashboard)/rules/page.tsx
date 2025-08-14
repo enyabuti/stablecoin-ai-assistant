@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db as prisma } from "@/lib/db";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -15,8 +14,9 @@ import {
   DollarSign,
   Calendar,
   TestTube,
+  Shield,
+  TrendingUp,
 } from "lucide-react";
-import { getChainConfig } from "@/lib/routing/chains";
 
 async function getUserRules(userId: string) {
   const rules = await prisma.rule.findMany({
@@ -50,16 +50,16 @@ async function getUserRules(userId: string) {
 
 function StatusBadge({ status }: { status: string }) {
   const variants = {
-    ACTIVE: "default",
-    PAUSED: "secondary", 
-    COMPLETED: "outline",
-    FAILED: "destructive",
+    ACTIVE: "badge-success",
+    PAUSED: "badge-secondary", 
+    COMPLETED: "badge-secondary",
+    FAILED: "badge-warning",
   } as const;
   
   return (
-    <Badge variant={variants[status as keyof typeof variants] || "outline"}>
+    <span className={variants[status as keyof typeof variants] || "badge-secondary"}>
       {status.toLowerCase()}
-    </Badge>
+    </span>
   );
 }
 
@@ -80,11 +80,11 @@ const mockRules = [
     type: "schedule",
     status: "ACTIVE",
     json: { description: "Send $500 USDC to contractor monthly" },
-    nextRunAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    nextRunAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     executionCount: 12,
     totalFees: 2.84,
     avgFee: 0.237,
-    lastExecution: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+    lastExecution: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   },
   {
     id: "rule_demo_2", 
@@ -95,134 +95,147 @@ const mockRules = [
     executionCount: 3,
     totalFees: 0.45,
     avgFee: 0.150,
-    lastExecution: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
+    lastExecution: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
   },
   {
     id: "rule_demo_3",
     type: "schedule", 
     status: "PAUSED",
     json: { description: "Weekly DCA $100 into BTC" },
-    nextRunAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+    nextRunAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     executionCount: 8,
     totalFees: 1.92,
     avgFee: 0.240,
-    lastExecution: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) // 14 days ago
+    lastExecution: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
   }
 ];
 
 export default async function RulesPage() {
   const session = await getServerSession(authOptions);
-  
-  // Use mock data for demo mode, real data for authenticated users
   const rules = session?.user?.id ? await getUserRules(session.user.id) : mockRules;
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-contrast-enhanced">Rules</h1>
-          <p className="text-muted-foreground">
-            Manage your automation rules and schedules
-          </p>
+      <div className="border-b border-border bg-background">
+        <div className="container-page">
+          <div className="flex items-center justify-between py-8">
+            <div>
+              <h1 className="text-heading text-foreground mb-2">Automation Rules</h1>
+              <p className="text-body text-foreground-muted">
+                Manage your automation rules and schedules
+              </p>
+            </div>
+            <Button asChild className="btn-primary">
+              <Link href="/rules/new">
+                <Plus className="w-4 h-4 mr-2" />
+                New Rule
+              </Link>
+            </Button>
+          </div>
         </div>
-        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-          <Link href="/rules/new">
-            <Plus className="w-4 h-4 mr-2" />
-            New Rule
-          </Link>
-        </Button>
       </div>
 
-      {/* Demo Mode Banner */}
-      {!session?.user?.id && (
-        <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
-              <TestTube className="w-3 h-3 text-amber-600" />
+      <div className="container-page py-8">
+        {/* Demo Mode Banner */}
+        {!session?.user?.id && (
+          <div className="demo-banner mb-8">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
+                <TestTube className="w-6 h-6 text-yellow-900" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-subheading text-yellow-900">Demo Mode - Sample Data</h3>
+                  <div className="px-3 py-1 bg-yellow-400/20 rounded-full">
+                    <span className="text-xs font-medium text-yellow-800">Safe Testing</span>
+                  </div>
+                </div>
+                <p className="text-body text-yellow-800 mb-4">
+                  These are example automation rules to showcase functionality. 
+                  <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
+                    Sign up
+                  </Link> to create your own rules and enable live transactions.
+                </p>
+                <div className="flex items-center space-x-2 text-body-small text-yellow-700">
+                  <Shield className="w-4 h-4" />
+                  <span>No real transactions • Sample data only • Always safe</span>
+                </div>
+              </div>
             </div>
-            <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode - Sample Data</h3>
           </div>
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            These are example automation rules to showcase functionality. 
-            <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
-              Sign up
-            </Link> to create your own rules and enable live transactions.
-          </p>
-        </div>
-      )}
+        )}
 
-      {/* Rules Table */}
-      {rules.length > 0 ? (
-        <Card className="glass-card">
-          <CardContent className="p-0">
+        {/* Rules Table */}
+        {rules.length > 0 ? (
+          <div className="card-modern overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-white/10">
+                <thead className="border-b border-border bg-background-muted">
                   <tr className="text-left">
-                    <th className="p-4 font-medium text-sm text-muted-foreground">Rule</th>
-                    <th className="p-4 font-medium text-sm text-muted-foreground">Status</th>
-                    <th className="p-4 font-medium text-sm text-muted-foreground">Next Run</th>
-                    <th className="p-4 font-medium text-sm text-muted-foreground">Stats</th>
-                    <th className="p-4 font-medium text-sm text-muted-foreground">Actions</th>
+                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Rule</th>
+                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Status</th>
+                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Next Run</th>
+                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Performance</th>
+                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rules.map((rule: any) => {
                     const ruleData = rule.json as any;
                     return (
-                      <tr key={rule.id} className="border-b border-white/5 hover:bg-bg-elevated/30">
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <p className="font-medium">
+                      <tr key={rule.id} className="border-b border-border hover:bg-background-muted/50 transition-colors">
+                        <td className="px-6 py-6">
+                          <div className="space-y-2">
+                            <p className="text-body font-medium text-foreground">
                               {ruleData?.description || `Rule ${rule.id.slice(0, 8)}`}
                             </p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-3">
                               {rule.type === "schedule" ? (
-                                <Calendar className="w-3 h-3" />
+                                <Calendar className="w-4 h-4 text-foreground-muted" />
                               ) : (
-                                <DollarSign className="w-3 h-3" />
+                                <TrendingUp className="w-4 h-4 text-foreground-muted" />
                               )}
-                              <span className="capitalize">{rule.type}</span>
+                              <span className="text-body-small text-foreground-muted capitalize font-medium">{rule.type}</span>
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="px-6 py-6">
                           <StatusBadge status={rule.status} />
                         </td>
-                        <td className="p-4">
-                          <div className="text-sm">
+                        <td className="px-6 py-6">
+                          <div className="text-body text-foreground">
                             {rule.type === "conditional" ? (
-                              <span className="text-muted-foreground">Monitoring</span>
+                              <span className="text-foreground-muted font-medium">Monitoring</span>
                             ) : rule.nextRunAt ? (
-                              formatDate(rule.nextRunAt.toISOString())
+                              <span className="font-medium">{formatDate(rule.nextRunAt.toISOString())}</span>
                             ) : (
-                              <span className="text-muted-foreground">Not scheduled</span>
+                              <span className="text-foreground-muted font-medium">Not scheduled</span>
                             )}
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="text-xs space-y-1">
-                            <div>{rule.executionCount} runs</div>
-                            <div className="text-muted-foreground">
+                        <td className="px-6 py-6">
+                          <div className="space-y-1">
+                            <div className="text-body font-medium text-foreground">{rule.executionCount} executions</div>
+                            <div className="text-body-small text-foreground-muted">
                               ${rule.totalFees.toFixed(2)} total fees
                             </div>
-                            <div className="text-muted-foreground">
+                            <div className="text-body-small text-foreground-muted">
                               ${rule.avgFee.toFixed(3)} avg fee
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-1">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <td className="px-6 py-6">
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
                               {rule.status === "ACTIVE" ? (
-                                <Pause className="w-3 h-3" />
+                                <Pause className="w-4 h-4" />
                               ) : (
-                                <Play className="w-3 h-3" />
+                                <Play className="w-4 h-4" />
                               )}
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="w-3 h-3" />
+                            <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
+                              <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </div>
                         </td>
@@ -232,26 +245,26 @@ export default async function RulesPage() {
                 </tbody>
               </table>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        /* Empty State */
-        <Card className="glass-card">
-          <CardContent className="p-12 text-center">
-            <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No automation rules yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Create your first rule to start automating stablecoin transfers
+          </div>
+        ) : (
+          /* Empty State */
+          <div className="card-modern p-16 text-center">
+            <div className="w-16 h-16 bg-primary-light rounded-xl flex items-center justify-center mx-auto mb-6">
+              <Clock className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-subheading text-foreground mb-3">No automation rules yet</h3>
+            <p className="text-body text-foreground-muted mb-8 max-w-md mx-auto">
+              Create your first rule to start automating stablecoin transfers across multiple blockchains
             </p>
-            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+            <Button asChild className="btn-primary">
               <Link href="/rules/new">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Rule
               </Link>
             </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

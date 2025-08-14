@@ -17,6 +17,16 @@ const config: Config = {
     },
     extend: {
       colors: {
+        'background-muted': 'rgb(var(--background-muted) / <alpha-value>)',
+        'background-subtle': 'rgb(var(--background-subtle) / <alpha-value>)',
+        'foreground-muted': 'rgb(var(--foreground-muted) / <alpha-value>)',
+        'foreground-subtle': 'rgb(var(--foreground-subtle) / <alpha-value>)',
+        'card-hover': 'rgb(var(--card-hover) / <alpha-value>)',
+        'card-border': 'rgb(var(--card-border) / <alpha-value>)',
+        'primary-light': 'rgb(var(--primary-light) / <alpha-value>)',
+        'primary-hover': 'rgb(var(--primary-hover) / <alpha-value>)',
+        'secondary-light': 'rgb(var(--secondary-light) / <alpha-value>)',
+        'border-light': 'rgb(var(--border-light) / <alpha-value>)',
         brand: {
           DEFAULT: "#8B5CF6", // Purple primary
           50: "#F3E8FF",
@@ -68,18 +78,25 @@ const config: Config = {
         success: "#22C55E",
         warn: "#F59E0B",
         danger: "#EF4444",
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: "rgb(var(--border))",
+        input: "rgb(var(--input))",
+        ring: "rgb(var(--ring))",
+        background: "rgb(var(--background))",
+        foreground: "rgb(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "rgb(var(--primary))",
+          foreground: "rgb(var(--primary-foreground))",
+          light: "rgb(var(--primary-light))",
+          hover: "rgb(var(--primary-hover))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "rgb(var(--secondary))",
+          foreground: "rgb(var(--secondary-foreground))",
+          light: "rgb(var(--secondary-light))",
+        },
+        accent: {
+          DEFAULT: "rgb(var(--accent))",
+          light: "rgb(var(--accent-light))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
