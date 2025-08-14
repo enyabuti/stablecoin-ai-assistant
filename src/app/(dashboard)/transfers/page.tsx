@@ -142,52 +142,67 @@ export default async function TransfersPage() {
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-contrast-enhanced">Transfers</h1>
-          <p className="text-muted-foreground">
-            View all transfer executions and their status
-          </p>
+      <div className="border-b border-border bg-background">
+        <div className="container-page">
+          <div className="flex items-center justify-between py-8">
+            <div>
+              <h1 className="text-heading text-foreground mb-2">Transfers</h1>
+              <p className="text-body text-foreground-muted">
+                View all transfer executions and their status
+              </p>
+            </div>
+            <Button variant="outline">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
-        <Button variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
-        </Button>
       </div>
 
-      {/* Demo Mode Banner */}
-      {!session?.user?.id && (
-        <div className="glass-card border-amber-500/20 bg-amber-50/10 p-6 rounded-2xl">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
-              <TestTube className="w-3 h-3 text-amber-600" />
-            </div>
-            <h3 className="font-semibold text-amber-700 dark:text-amber-300">Demo Mode - Sample Data</h3>
-          </div>
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            These are example transfer executions to showcase functionality. 
-            <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
-              Sign up
-            </Link> to see your actual transactions and execute real transfers.
-          </p>
-        </div>
-      )}
+      <div className="container-page py-8">
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="glass-card">
-          <CardContent className="p-6">
+        {/* Demo Mode Banner */}
+        {!session?.user?.id && (
+          <div className="demo-banner mb-8">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
+                <TestTube className="w-6 h-6 text-yellow-900" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-subheading text-yellow-900">Demo Mode - Sample Data</h3>
+                  <div className="px-3 py-1 bg-yellow-400/20 rounded-full">
+                    <span className="text-xs font-medium text-yellow-800">Safe Testing</span>
+                  </div>
+                </div>
+                <p className="text-body text-yellow-800 mb-4">
+                  These are example transfer executions to showcase functionality. 
+                  <Link href="/auth/signup" className="font-medium hover:underline ml-1">
+                    Sign up
+                  </Link> to see your actual transactions and execute real transfers.
+                </p>
+                <div className="flex items-center space-x-2 text-body-small text-yellow-700">
+                  <TestTube className="w-4 h-4" />
+                  <span>No real transactions • Sample data only • Always safe</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="card-modern p-6">
             <div className="flex items-center gap-3">
               <ArrowLeftRight className="w-8 h-8 text-primary" />
               <div>
-                <p className="text-2xl font-bold font-mono">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">Total Transfers</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+                <p className="text-body-small text-foreground-muted">Total Transfers</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
         
         <Card className="glass-card">
           <CardContent className="p-6">
@@ -322,6 +337,7 @@ export default async function TransfersPage() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

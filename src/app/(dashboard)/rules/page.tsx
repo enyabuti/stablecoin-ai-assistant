@@ -153,7 +153,7 @@ export default async function RulesPage() {
                 </div>
                 <p className="text-body text-yellow-800 mb-4">
                   These are example automation rules to showcase functionality. 
-                  <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
+                  <Link href="/auth/signup" className="font-medium hover:underline ml-1">
                     Sign up
                   </Link> to create your own rules and enable live transactions.
                 </p>

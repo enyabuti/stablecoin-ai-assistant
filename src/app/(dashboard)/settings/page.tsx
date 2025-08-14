@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,210 +17,228 @@ import {
 
 export default function SettingsPage() {
   return (
-    <div className="content-section">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-headline text-gradient-subtle mb-3">Settings</h1>
-        <p className="text-body-large text-muted-foreground">
-          Configure API keys, feature flags, and webhook settings
-        </p>
-      </div>
-
-      {/* Demo Mode Banner */}
-      <div className="panel-modern border-amber-500/30 bg-gradient-to-r from-amber-50/20 via-yellow-50/20 to-amber-50/20 mb-12">
-        <div className="flex items-start gap-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-3xl flex items-center justify-center shadow-lg">
-            <TestTube className="w-8 h-8 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-xl font-bold text-amber-700 dark:text-amber-300">Demo Mode - Safe Configuration</h3>
-              <div className="px-4 py-2 bg-amber-500/20 rounded-full">
-                <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Protected</span>
-              </div>
-            </div>
-            <p className="text-body text-amber-600 dark:text-amber-400 leading-relaxed mb-4">
-              Settings are in demo mode. Changes won&apos;t affect live systems until you configure production API keys.
+      <div className="border-b border-border bg-background">
+        <div className="container-page">
+          <div className="py-8">
+            <h1 className="text-heading text-foreground mb-2">Settings</h1>
+            <p className="text-body text-foreground-muted">
+              Configure API keys, feature flags, and webhook settings
             </p>
-            <div className="flex items-center gap-3 text-caption text-amber-600/80 dark:text-amber-400/80">
-              <Shield className="w-5 h-5" />
-              <span>All sensitive data is mocked for security</span>
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Feature Flags */}
-        <div className="panel-modern">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-card-foreground mb-2 flex items-center gap-3">
-              <Settings className="w-6 h-6" />
-              Feature Flags
-            </h2>
-          </div>
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-body font-semibold text-card-foreground">Use Circle API</p>
-                <p className="text-caption text-muted-foreground leading-relaxed">
-                  Connect to real Circle Programmable Wallets
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Switch />
-                <Badge variant="secondary" className="font-medium">Disabled</Badge>
-              </div>
+      <div className="container-page py-8">
+        {/* Demo Mode Banner */}
+        <div className="demo-banner mb-8">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
+              <TestTube className="w-6 h-6 text-yellow-900" />
             </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-body font-semibold text-card-foreground">Use Mock APIs</p>
-                <p className="text-caption text-muted-foreground leading-relaxed">
-                  Use mock providers for development
-                </p>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-subheading text-yellow-900">Demo Mode - Safe Configuration</h3>
+                <div className="px-3 py-1 bg-yellow-400/20 rounded-full">
+                  <span className="text-xs font-medium text-yellow-800">Protected</span>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Switch defaultChecked />
-                <Badge variant="default" className="font-medium">Enabled</Badge>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-body font-semibold text-card-foreground">Enable CCTP</p>
-                <p className="text-caption text-muted-foreground leading-relaxed">
-                  Cross-chain transfer protocol
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Switch />
-                <Badge variant="secondary" className="font-medium">Disabled</Badge>
+              <p className="text-body text-yellow-800 mb-4">
+                Settings are in demo mode. Changes won&apos;t affect live systems until you configure production API keys.
+              </p>
+              <div className="flex items-center space-x-2 text-body-small text-yellow-700">
+                <Shield className="w-4 h-4" />
+                <span>All sensitive data is mocked for security</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* API Keys */}
-        <div className="panel-modern">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-card-foreground mb-2 flex items-center gap-3">
-              <Key className="w-6 h-6" />
-              API Keys
-            </h2>
-          </div>
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-body font-semibold text-card-foreground">Circle API Key</label>
-              <Input 
-                type="password" 
-                placeholder="Not configured"
-                className="font-mono h-12 text-body rounded-xl"
-              />
-              <p className="text-caption text-muted-foreground">
-                Get from Circle Developer Console
-              </p>
+        {/* Settings Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Feature Flags */}
+          <div className="card-modern p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center">
+                <Settings className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-subheading text-foreground">Feature Flags</h2>
             </div>
             
-            <div className="space-y-3">
-              <label className="text-body font-semibold text-card-foreground">OpenAI API Key</label>
-              <Input 
-                type="password" 
-                placeholder="Not configured"
-                className="font-mono h-12 text-body rounded-xl"
-              />
-              <p className="text-caption text-muted-foreground">
-                For LLM rule parsing (optional)
-              </p>
+            <div className="space-y-6">
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-body font-semibold text-foreground mb-1">Use Circle API</h3>
+                  <p className="text-body-small text-foreground-muted leading-relaxed">
+                    Connect to real Circle Programmable Wallets for live transactions
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <Switch />
+                  <Badge className="bg-gray-100 text-gray-700 border-gray-200">Disabled</Badge>
+                </div>
+              </div>
+              
+              <div className="h-px bg-border"></div>
+              
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-body font-semibold text-foreground mb-1">Use Mock APIs</h3>
+                  <p className="text-body-small text-foreground-muted leading-relaxed">
+                    Use mock providers for safe development and testing
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <Switch defaultChecked />
+                  <Badge className="bg-green-100 text-green-700 border-green-200">Enabled</Badge>
+                </div>
+              </div>
+              
+              <div className="h-px bg-border"></div>
+              
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-body font-semibold text-foreground mb-1">Enable CCTP</h3>
+                  <p className="text-body-small text-foreground-muted leading-relaxed">
+                    Cross-chain transfer protocol for seamless multi-chain operations
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <Switch />
+                  <Badge className="bg-gray-100 text-gray-700 border-gray-200">Disabled</Badge>
+                </div>
+              </div>
             </div>
-            
-            <Button variant="outline" size="lg" className="w-full h-12 text-base font-semibold rounded-xl">
-              Save API Keys
-            </Button>
           </div>
-        </div>
 
-        {/* Webhooks */}
-        <div className="panel-modern">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-card-foreground mb-2 flex items-center gap-3">
-              <Webhook className="w-6 h-6" />
-              Webhook Configuration
-            </h2>
+          {/* API Keys */}
+          <div className="card-modern p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center">
+                <Key className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-subheading text-foreground">API Keys</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-body font-semibold text-foreground mb-3">Circle API Key</label>
+                <Input 
+                  type="password" 
+                  placeholder="Not configured"
+                  className="input-modern font-mono"
+                />
+                <p className="text-body-small text-foreground-muted mt-2">
+                  Get from Circle Developer Console
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-body font-semibold text-foreground mb-3">OpenAI API Key</label>
+                <Input 
+                  type="password" 
+                  placeholder="Not configured"
+                  className="input-modern font-mono"
+                />
+                <p className="text-body-small text-foreground-muted mt-2">
+                  For LLM rule parsing (optional)
+                </p>
+              </div>
+              
+              <Button className="btn-primary w-full">
+                Save API Keys
+              </Button>
+            </div>
           </div>
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-body font-semibold text-card-foreground">Webhook URL</label>
-              <Input 
-                value="https://your-app.com/api/webhooks/circle"
-                readOnly
-                className="font-mono h-12 text-body rounded-xl bg-muted/50"
-              />
-            </div>
-            
-            <div className="space-y-3">
-              <label className="text-body font-semibold text-card-foreground">Webhook Secret</label>
-              <Input 
-                type="password"
-                placeholder="Configure in Circle dashboard"
-                className="font-mono h-12 text-body rounded-xl"
-              />
-            </div>
-            
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-success/10 border border-success/20">
-              <CheckCircle className="w-5 h-5 text-success" />
-              <span className="text-body font-medium text-success">Webhooks are functioning</span>
-            </div>
-            
-            <Button variant="outline" size="lg" className="w-full h-12 text-base font-semibold rounded-xl">
-              <TestTube className="w-5 h-5 mr-3" />
-              Test Webhook
-            </Button>
-          </div>
-        </div>
 
-        {/* System Status */}
-        <div className="panel-modern">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-card-foreground mb-2">System Status</h2>
+          {/* Webhooks */}
+          <div className="card-modern p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center">
+                <Webhook className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-subheading text-foreground">Webhook Configuration</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-body font-semibold text-foreground mb-3">Webhook URL</label>
+                <Input 
+                  value="https://your-app.com/api/webhooks/circle"
+                  readOnly
+                  className="input-modern font-mono bg-background-muted"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-body font-semibold text-foreground mb-3">Webhook Secret</label>
+                <Input 
+                  type="password"
+                  placeholder="Configure in Circle dashboard"
+                  className="input-modern font-mono"
+                />
+              </div>
+              
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span className="text-body font-medium text-green-700">Webhooks are functioning</span>
+              </div>
+              
+              <Button variant="outline" className="w-full">
+                <TestTube className="w-4 h-4 mr-2" />
+                Test Webhook
+              </Button>
+            </div>
           </div>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <span className="text-body font-medium text-card-foreground">Database Connection</span>
-              <Badge variant="default" className="bg-success font-medium">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Connected
-              </Badge>
+
+          {/* System Status */}
+          <div className="card-modern p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-subheading text-foreground">System Status</h2>
             </div>
             
-            <div className="flex items-center justify-between">
-              <span className="text-body font-medium text-card-foreground">Redis Queue</span>
-              <Badge variant="default" className="bg-success font-medium">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Running
-              </Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-body font-medium text-card-foreground">Job Workers</span>
-              <Badge variant="default" className="bg-success font-medium">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Active
-              </Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-body font-medium text-card-foreground">Circle API</span>
-              <Badge variant="secondary" className="font-medium">
-                <AlertCircle className="w-4 h-4 mr-2" />
-                Mock Mode
-              </Badge>
-            </div>
-            
-            <div className="pt-6 border-t border-border/50">
-              <p className="text-caption text-muted-foreground">
-                Last updated: {new Date().toLocaleTimeString()}
-              </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-body text-foreground">Database Connection</span>
+                <Badge className="bg-green-100 text-green-700 border-green-200">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Connected
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-body text-foreground">Redis Queue</span>
+                <Badge className="bg-green-100 text-green-700 border-green-200">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Running
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-body text-foreground">Job Workers</span>
+                <Badge className="bg-green-100 text-green-700 border-green-200">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Active
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-body text-foreground">Circle API</span>
+                <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  Mock Mode
+                </Badge>
+              </div>
+              
+              <div className="pt-4 border-t border-border">
+                <p className="text-body-small text-foreground-muted">
+                  Last updated: {new Date().toLocaleTimeString()}
+                </p>
+              </div>
             </div>
           </div>
         </div>

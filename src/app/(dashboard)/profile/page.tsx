@@ -118,7 +118,7 @@ export default function ProfilePage() {
           </div>
           <p className="text-sm text-amber-600 dark:text-amber-400">
             This is a sample profile to showcase functionality. 
-            <Link href="/auth/signin?mode=signup" className="font-medium hover:underline ml-1">
+            <Link href="/auth/signup" className="font-medium hover:underline ml-1">
               Sign up
             </Link> to create your own profile and save your preferences.
           </p>

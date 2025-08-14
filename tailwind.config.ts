@@ -27,6 +27,15 @@ const config: Config = {
         'primary-hover': 'rgb(var(--primary-hover) / <alpha-value>)',
         'secondary-light': 'rgb(var(--secondary-light) / <alpha-value>)',
         'border-light': 'rgb(var(--border-light) / <alpha-value>)',
+        'peach-primary': 'rgb(var(--peach-primary) / <alpha-value>)',
+        'peach-light': 'rgb(var(--peach-light) / <alpha-value>)',
+        'peach-lighter': 'rgb(var(--peach-lighter) / <alpha-value>)',
+        'lavender-primary': 'rgb(var(--lavender-primary) / <alpha-value>)',
+        'lavender-light': 'rgb(var(--lavender-light) / <alpha-value>)',
+        'lavender-lighter': 'rgb(var(--lavender-lighter) / <alpha-value>)',
+        'sky-primary': 'rgb(var(--sky-primary) / <alpha-value>)',
+        'sky-light': 'rgb(var(--sky-light) / <alpha-value>)',
+        'sky-lighter': 'rgb(var(--sky-lighter) / <alpha-value>)',
         brand: {
           DEFAULT: "#8B5CF6", // Purple primary
           50: "#F3E8FF",

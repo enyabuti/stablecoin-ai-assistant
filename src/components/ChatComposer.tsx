@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Paperclip, Mic, Brain, Sparkles, Zap } from "lucide-react";
@@ -15,13 +15,21 @@ interface ChatComposerProps {
   // MCP integration props
   onMCPResponse?: (response: any) => void;
   enableMCP?: boolean;
+  // New props for external control
+  initialValue?: string;
+  onInputChange?: (value: string) => void;
 }
 
-export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPResponse, enableMCP = true }: ChatComposerProps) {
-  const [input, setInput] = useState("");
+export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPResponse, enableMCP = true, initialValue = "", onInputChange }: ChatComposerProps) {
+  const [input, setInput] = useState(initialValue);
   const [isProcessing, setIsProcessing] = useState(false);
   const [mcpEnabled, setMcpEnabled] = useState(enableMCP);
   const [showMCPFeatures, setShowMCPFeatures] = useState(false);
+
+  // Sync with external initialValue changes
+  useEffect(() => {
+    setInput(initialValue);
+  }, [initialValue]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +37,7 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPRespon
 
     const userMessage = input.trim();
     setInput("");
+    onInputChange?.("");
     setIsProcessing(true);
 
     // If this is being used for rule parsing (legacy mode)
@@ -104,7 +113,10 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPRespon
         <div className="flex-1 relative">
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              onInputChange?.(e.target.value);
+            }}
             placeholder={`Message ${APP_NAME}...`}
             className="input-glass w-full h-12 pl-4 pr-12 rounded-3xl text-foreground placeholder:text-muted-foreground"
             onKeyDown={(e) => {

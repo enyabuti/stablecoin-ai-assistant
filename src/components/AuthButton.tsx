@@ -51,7 +51,7 @@ export function AuthButton() {
         size="sm" 
         className="btn-primary"
       >
-        <a href="/auth/signin?mode=signup">
+        <a href="/auth/signup">
           <span className="hidden sm:inline">Sign up</span>
           <span className="sm:hidden">+</span>
         </a>

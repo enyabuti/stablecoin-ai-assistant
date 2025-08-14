@@ -82,9 +82,9 @@ export function Layout({ children }: LayoutProps) {
                 <item.icon className="w-5 h-5" />
                 
                 {/* Tooltip */}
-                <div className="absolute left-16 top-1/2 -translate-y-1/2 px-3 py-2 glass-card text-card-foreground text-sm rounded-xl opacity-0 pointer-events-none group-hover:opacity-100 smooth-transition whitespace-nowrap z-50">
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-[9999]">
                   {item.name}
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-card rotate-45 border border-border"></div>
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
                 </div>
               </Link>
             );
@@ -99,22 +99,12 @@ export function Layout({ children }: LayoutProps) {
       
       {/* Full-Width Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <div className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <h1 className="font-bold text-xl text-foreground">{APP_NAME}</h1>
-            <div className="px-2 py-1 bg-primary/10 text-xs rounded-full text-muted-foreground border border-border">
-              Assistant
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <AuthButton />
-          </div>
+        {/* Top Bar - Hidden */}
+        <div className="hidden">
         </div>
         
         {/* Main Chat Content */}
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden relative z-10">
           {children}
         </main>
       </div>

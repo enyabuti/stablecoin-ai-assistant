@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatComposer } from "@/components/ChatComposer";
 import { APP_NAME, APP_TAGLINE } from "@/lib/appConfig";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Sparkles,
@@ -21,6 +22,8 @@ import {
   DollarSign,
   TestTube,
   TrendingUp,
+  Rocket,
+  ExternalLink,
 } from "lucide-react";
 
 const features = [
@@ -72,6 +75,49 @@ const useCases = [
 ];
 
 export default function DashboardPage() {
+  const [showAuthButtons, setShowAuthButtons] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [isCreatingRule, setIsCreatingRule] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdRule, setCreatedRule] = useState<string>("");
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    setShowAuthButtons(true);
+  };
+
+  const handleQuickStart = (text: string) => {
+    setChatInput(text);
+    // Scroll to chat section
+    document.getElementById('chat-section')?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'center'
+    });
+  };
+
+  const handleChatSubmit = async (message: string) => {
+    console.log("🤖 Processing automation rule:", message);
+    setIsCreatingRule(true);
+    
+    // Simulate AI processing and rule creation
+    setTimeout(() => {
+      setIsCreatingRule(false);
+      setCreatedRule(message);
+      setShowSuccess(true);
+      
+      // Hide success message and redirect after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+        router.push('/rules');
+      }, 3000);
+    }, 2000); // 2 second processing simulation
+  };
+
+  const handleViewRules = () => {
+    setShowSuccess(false);
+    router.push('/rules');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Modern Header */}
@@ -87,10 +133,27 @@ export default function DashboardPage() {
             </div>
             
             {/* CTA Button */}
-            <Button className="btn-primary">
-              <Users className="w-4 h-4 mr-2" />
-              Get Started
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button onClick={handleGetStarted} className="btn-primary">
+                <Users className="w-4 h-4 mr-2" />
+                Get Started
+              </Button>
+              
+              {showAuthButtons && (
+                <div className="flex items-center gap-2">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href="/auth/signin">
+                      Sign in
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" className="btn-primary">
+                    <Link href="/auth/signup">
+                      Sign up
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -123,7 +186,7 @@ export default function DashboardPage() {
               </Link>
             </Button>
             <Button asChild className="btn-secondary px-8 py-4 text-base">
-              <Link href="/auth/signin?mode=signup">
+              <Link href="/auth/signup">
                 <Users className="w-5 h-5 mr-2" />
                 Create Account
               </Link>
@@ -141,6 +204,132 @@ export default function DashboardPage() {
                 <div className="text-body-small text-foreground-muted">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Chat Input - Message Ferrow */}
+      <section id="chat-section" className="section-sm">
+        <div className="container-page">
+          <div className="card-modern p-8">
+            <div className="text-center mb-6">
+              <h2 className="text-subheading text-foreground mb-2">Message Ferrow Assistant</h2>
+              <p className="text-body text-foreground-muted">
+                Describe what you want to automate in natural language
+              </p>
+            </div>
+            <ChatComposer 
+              initialValue={chatInput}
+              onInputChange={setChatInput}
+              onSendMessage={handleChatSubmit}
+            />
+            
+            {/* Processing Animation */}
+            {isCreatingRule && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl">
+                  <div className="w-16 h-16 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                    <Sparkles className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                  <h3 className="text-heading text-foreground mb-2">Creating Your Rule</h3>
+                  <p className="text-body text-foreground-muted">
+                    Our AI is parsing your request and setting up the automation...
+                  </p>
+                  <div className="flex items-center justify-center mt-4 space-x-1">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Success Confirmation */}
+            {showSuccess && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl animate-scale-in">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="w-10 h-10 text-green-600" />
+                  </div>
+                  <h3 className="text-heading text-foreground mb-2">Rule Created Successfully! 🎉</h3>
+                  <p className="text-body text-foreground-muted mb-6">
+                    Your automation rule has been created and is now active:
+                  </p>
+                  
+                  <div className="bg-primary-light rounded-xl p-4 mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Rocket className="w-4 h-4 text-primary" />
+                      <span className="text-body-small font-medium text-primary">New Rule</span>
+                    </div>
+                    <p className="text-body font-medium text-foreground">"{createdRule}"</p>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3">
+                    <Button onClick={handleViewRules} className="btn-primary w-full">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      View All Rules
+                    </Button>
+                    <p className="text-caption text-foreground-muted">
+                      Redirecting automatically in 3 seconds...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Start Examples */}
+      <section className="section-md">
+        <div className="container-page">
+          <div className="text-center mb-12">
+            <h2 className="text-heading text-foreground mb-4">Quick Start</h2>
+            <p className="text-body-large text-foreground-muted max-w-2xl mx-auto">
+              Try these popular automation examples to get started quickly
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+            <button 
+              onClick={() => handleQuickStart("Send $50 USDC to John every Friday")}
+              className="card-interactive p-6 text-left group"
+            >
+              <div className="text-2xl mb-3">💰</div>
+              <p className="text-body font-medium text-foreground group-hover:text-primary transition-colors">
+                Send $50 USDC to John every Friday
+              </p>
+            </button>
+            
+            <button 
+              onClick={() => handleQuickStart("Send €200 EURC when EUR rises 2%")}
+              className="card-interactive p-6 text-left group"
+            >
+              <div className="text-2xl mb-3">📈</div>
+              <p className="text-body font-medium text-foreground group-hover:text-primary transition-colors">
+                Send €200 EURC when EUR rises 2%
+              </p>
+            </button>
+            
+            <button 
+              onClick={() => handleQuickStart("Transfer $100 to Alice monthly")}
+              className="card-interactive p-6 text-left group"
+            >
+              <div className="text-2xl mb-3">🔄</div>
+              <p className="text-body font-medium text-foreground group-hover:text-primary transition-colors">
+                Transfer $100 to Alice monthly
+              </p>
+            </button>
+            
+            <button 
+              onClick={() => handleQuickStart("Send $25 USDC to Mom weekly")}
+              className="card-interactive p-6 text-left group"
+            >
+              <div className="text-2xl mb-3">❤️</div>
+              <p className="text-body font-medium text-foreground group-hover:text-primary transition-colors">
+                Send $25 USDC to Mom weekly
+              </p>
+            </button>
           </div>
         </div>
       </section>
@@ -258,7 +447,7 @@ export default function DashboardPage() {
                 </Link>
               </Button>
               <Button asChild className="btn-secondary px-8 py-4 text-base">
-                <Link href="/auth/signin?mode=signup">
+                <Link href="/auth/signup">
                   <ArrowRight className="w-5 h-5 mr-2" />
                   Create Account
                 </Link>
@@ -288,21 +477,20 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="mt-8 pt-8 border-t border-border">
-            <p className="text-caption text-center text-foreground-subtle max-w-4xl mx-auto">
+        </div>
+      </footer>
+
+      {/* Privacy Disclaimer */}
+      <section className="section-sm bg-background-muted">
+        <div className="container-content">
+          <div className="card-modern p-8 text-center">
+            <p className="text-body text-foreground-subtle max-w-4xl mx-auto">
               <strong>Important:</strong> This is a demonstration platform. All metrics and balances shown are sample data. 
               Cryptocurrency transactions involve risk. This software is provided for educational purposes only and does not constitute financial advice.
             </p>
           </div>
         </div>
-      </footer>
-
-      {/* Chat Input */}
-      <div className="border-t border-border bg-background/80 backdrop-blur-lg">
-        <div className="container-page py-6">
-          <ChatComposer />
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
