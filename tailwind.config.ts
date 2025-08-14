@@ -49,6 +49,19 @@ const config: Config = {
           800: "#5B21B6",
           900: "#4C1D95",
         },
+        ink: {
+          DEFAULT: "#0B1220",
+          50: "#F8F9FA",
+          100: "#E9ECEF",
+          200: "#DEE2E6",
+          300: "#CED4DA",
+          400: "#ADB5BD",
+          500: "#6B7280",
+          600: "#495057",
+          700: "#343A40",
+          800: "#212529",
+          900: "#2E2A36",
+        },
         accent: {
           DEFAULT: "#06B6D4", // Teal accent
           50: "#ECFEFF",
@@ -61,19 +74,6 @@ const config: Config = {
           700: "#0E7490",
           800: "#155E75",
           900: "#164E63",
-        },
-        ink: {
-          DEFAULT: "#0B1220",
-          50: "#F8F9FA",
-          100: "#E9ECEF",
-          200: "#DEE2E6",
-          300: "#CED4DA",
-          400: "#ADB5BD",
-          500: "#6B7280",
-          600: "#495057",
-          700: "#343A40",
-          800: "#212529",
-          900: "#0B1220",
         },
         bg: {
           DEFAULT: "#0F0F23", // Deep purple-navy base
@@ -140,6 +140,7 @@ const config: Config = {
         'xl': 'var(--shadow-xl)',
         'glow': 'var(--shadow-glow)',
         'glass': 'var(--shadow-glass)',
+        'card': '0 1px 0 #ffffff0d, 0 8px 24px #0000001a',
       },
       fontFamily: {
         sans: ["var(--font-inter)"],
@@ -149,6 +150,9 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        card: "16px",
+        control: "12px",
+        pill: "999px",
       },
       keyframes: {
         "accordion-down": {

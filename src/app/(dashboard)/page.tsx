@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ChatComposer } from "@/components/ChatComposer";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { KPICarousel } from "@/components/mobile/KPICarousel";
+import { RuleCard } from "@/components/RuleCard";
 import { APP_NAME, APP_TAGLINE } from "@/lib/appConfig";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +28,9 @@ import {
   TrendingUp,
   Rocket,
   ExternalLink,
+  Plus,
+  Send,
+  Repeat,
 } from "lucide-react";
 
 const features = [
@@ -54,6 +61,60 @@ const stats = [
   { label: "Avg Transaction Fee", value: "~$0.05", icon: DollarSign },
   { label: "Uptime", value: "99.9%", icon: Activity },
   { label: "Execution Speed", value: "~2s", icon: Zap },
+];
+
+const quickActions = [
+  {
+    title: "Send $100",
+    description: "Quick transfer",
+    icon: Send,
+    action: "Send $100 USDC to Alice weekly"
+  },
+  {
+    title: "Create allowance", 
+    description: "Set spending limit",
+    icon: Plus,
+    action: "Allow $500 monthly spending on Base"
+  },
+  {
+    title: "Move to EURC",
+    description: "On price change",
+    icon: Repeat,
+    action: "Move to EURC if EUR rises 2%"
+  },
+  {
+    title: "Schedule payment",
+    description: "Recurring transfer",
+    icon: Clock,
+    action: "Send $50 USDC to John every Friday"
+  }
+];
+
+const recentActivity = [
+  {
+    id: "1",
+    title: "Send $50 USDC to John",
+    status: "success" as const,
+    timestamp: "2 hours ago",
+    amount: "$50.00",
+    chain: "Base"
+  },
+  {
+    id: "2", 
+    title: "Weekly DCA into ETH",
+    status: "success" as const,
+    timestamp: "1 day ago",
+    amount: "$200.00",
+    chain: "Ethereum"
+  },
+  {
+    id: "3",
+    title: "Monthly rent payment",
+    status: "pending" as const,
+    timestamp: "2 days ago",
+    amount: "$1,500.00", 
+    chain: "Polygon"
+  }
 ];
 
 const useCases = [
@@ -119,9 +180,12 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Modern Header */}
-      <header className="border-b border-border bg-background/80 backdrop-blur-lg sticky top-0 z-50">
+    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom)+80px)] sm:pb-0">
+      {/* Mobile Header */}
+      <MobileHeader title="Home" showAddRule={true} />
+      
+      {/* Desktop Header - Hidden on mobile */}
+      <header className="border-b border-border bg-background/80 backdrop-blur-lg sticky top-0 z-50 hidden sm:block">
         <div className="container-page">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -158,8 +222,36 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="section-xl bg-gradient-to-b from-background to-background-muted">
+      {/* Mobile Hero Section */}
+      <section className="sm:hidden px-4 pt-4 pb-6">
+        {/* CTA Section */}
+        <Card className="p-6 mb-4 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center space-x-2 bg-primary-light text-primary px-3 py-1 rounded-full text-xs font-medium">
+              <TestTube className="w-3 h-3" />
+              <span>Demo Mode</span>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Create your first rule
+            </h1>
+            <p className="text-sm text-foreground-muted">
+              Automate crypto payments with simple English
+            </p>
+            <Button asChild className="btn-primary w-full">
+              <Link href="/rules/new">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Rule
+              </Link>
+            </Button>
+          </div>
+        </Card>
+
+        {/* KPI Carousel */}
+        <KPICarousel />
+      </section>
+
+      {/* Desktop Hero - Hidden on mobile */}
+      <section className="section-xl bg-gradient-to-b from-background to-background-muted hidden sm:block">
         <div className="container-content text-center">
           {/* Hero Badge */}
           <div className="inline-flex items-center space-x-2 bg-primary-light text-primary px-4 py-2 rounded-full text-sm font-medium mb-8 animate-fade-in">
@@ -208,8 +300,77 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Chat Input - Message Ferrow */}
-      <section id="chat-section" className="section-sm">
+      {/* Mobile Quick Actions */}
+      <section className="sm:hidden px-4 py-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action, index) => (
+              <button
+                key={index}
+                onClick={() => handleQuickStart(action.action)}
+                className="card-interactive p-4 text-left group"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg flex items-center justify-center">
+                    <action.icon className="w-4 h-4 text-primary" />
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-900 group-hover:text-primary transition-colors text-sm mb-1">
+                  {action.title}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {action.description}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
+            <Link
+              href="/transfers"
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+            >
+              See all
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {recentActivity.map((activity) => (
+              <Card key={activity.id} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-gray-900 truncate text-sm">
+                      {activity.title}
+                    </h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="text-xs text-gray-500">{activity.timestamp}</span>
+                      <span className="text-xs text-gray-400">•</span>
+                      <span className="text-xs text-gray-500">{activity.chain}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right">
+                      <div className="font-medium text-gray-900 text-sm">{activity.amount}</div>
+                    </div>
+                    <div className={`w-2 h-2 rounded-full ${
+                      activity.status === "success" ? "bg-green-500" :
+                      activity.status === "pending" ? "bg-yellow-500" :
+                      "bg-red-500"
+                    }`} />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Desktop Chat Input - Message Ferrow */}
+      <section id="chat-section" className="section-sm hidden sm:block">
         <div className="container-page">
           <div className="card-modern p-8">
             <div className="text-center mb-6">
@@ -280,8 +441,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Quick Start Examples */}
-      <section className="section-md">
+      {/* Quick Start Examples - Desktop Only */}
+      <section className="section-md hidden sm:block">
         <div className="container-page">
           <div className="text-center mb-12">
             <h2 className="text-heading text-foreground mb-4">Quick Start</h2>
@@ -334,8 +495,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Demo Banner */}
-      <section className="section-sm">
+      {/* Demo Banner - Desktop Only */}
+      <section className="section-sm hidden sm:block">
         <div className="container-content">
           <div className="demo-banner animate-fade-in">
             <div className="flex items-start space-x-4">
@@ -357,8 +518,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="section-lg">
+      {/* Features Section - Desktop Only */}
+      <section className="section-lg hidden sm:block">
         <div className="container-page">
           <div className="text-center mb-16">
             <h2 className="text-heading text-foreground mb-4">Powerful Automation Features</h2>
@@ -381,8 +542,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Use Cases Section */}
-      <section className="section-lg bg-background-muted">
+      {/* Use Cases Section - Desktop Only */}
+      <section className="section-lg bg-background-muted hidden sm:block">
         <div className="container-page">
           <div className="text-center mb-16">
             <h2 className="text-heading text-foreground mb-4">What You Can Automate</h2>
@@ -405,8 +566,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Performance Stats */}
-      <section className="section-lg">
+      {/* Performance Stats - Desktop Only */}
+      <section className="section-lg hidden sm:block">
         <div className="container-content">
           <div className="card-modern p-12 text-center">
             <h2 className="text-heading text-foreground mb-4">Built for Scale</h2>
@@ -430,8 +591,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="section-lg">
+      {/* CTA Section - Desktop Only */}
+      <section className="section-lg hidden sm:block">
         <div className="container-content">
           <div className="card-modern p-12 text-center bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
             <h2 className="text-heading text-foreground mb-4">Ready to Start Automating?</h2>

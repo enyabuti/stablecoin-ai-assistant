@@ -1,9 +1,12 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { db as prisma } from "@/lib/db";
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { RuleCard } from "@/components/RuleCard";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
   Plus,
@@ -16,37 +19,18 @@ import {
   TestTube,
   Shield,
   TrendingUp,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
-async function getUserRules(userId: string) {
-  const rules = await prisma.rule.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    include: {
-      executions: {
-        select: {
-          status: true,
-          feeUsd: true,
-          createdAt: true,
-        },
-      },
-    },
-  });
+// Rule segments for mobile
+type RuleSegment = "active" | "needs_approval" | "paused";
 
-  return rules.map((rule: any) => {
-    const completedExecutions = rule.executions.filter((e: any) => e.status === "COMPLETED");
-    const totalFees = completedExecutions.reduce((sum: number, e: any) => sum + (e.feeUsd || 0), 0);
-    const avgFee = completedExecutions.length > 0 ? totalFees / completedExecutions.length : 0;
-    
-    return {
-      ...rule,
-      executionCount: rule.executions.length,
-      totalFees,
-      avgFee,
-      lastExecution: rule.executions[0]?.createdAt || null,
-    };
-  });
-}
+const segments = [
+  { key: "active" as RuleSegment, label: "Active", count: 3 },
+  { key: "needs_approval" as RuleSegment, label: "Needs Approval", count: 1 },
+  { key: "paused" as RuleSegment, label: "Paused", count: 2 },
+];
 
 function StatusBadge({ status }: { status: string }) {
   const variants = {
@@ -77,47 +61,80 @@ function formatDate(dateString: string | null) {
 const mockRules = [
   {
     id: "rule_demo_1",
-    type: "schedule",
-    status: "ACTIVE",
-    json: { description: "Send $500 USDC to contractor monthly" },
-    nextRunAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    executionCount: 12,
-    totalFees: 2.84,
-    avgFee: 0.237,
-    lastExecution: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    title: "Monthly contractor payment",
+    description: "Send $500 USDC to contractor monthly",
+    status: "active" as const,
+    frequency: "Monthly",
+    amount: "$500",
+    nextRun: "in 7 days",
+    limits: { daily: "$1,000" },
+    lastExecution: {
+      status: "success" as const,
+      timestamp: "30 days ago"
+    }
   },
   {
     id: "rule_demo_2", 
-    type: "conditional",
-    status: "ACTIVE",
-    json: { description: "Buy $200 ETH when price drops below $2000" },
-    nextRunAt: null,
-    executionCount: 3,
-    totalFees: 0.45,
-    avgFee: 0.150,
-    lastExecution: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+    title: "ETH buy the dip",
+    description: "Buy $200 ETH when price drops below $2000",
+    status: "active" as const,
+    frequency: "Price-based",
+    amount: "$200",
+    nextRun: "Waiting for trigger",
+    limits: { confirmOver: "$100" },
+    lastExecution: {
+      status: "success" as const,
+      timestamp: "5 days ago"
+    }
   },
   {
     id: "rule_demo_3",
-    type: "schedule", 
-    status: "PAUSED",
-    json: { description: "Weekly DCA $100 into BTC" },
-    nextRunAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    executionCount: 8,
-    totalFees: 1.92,
-    avgFee: 0.240,
-    lastExecution: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    title: "Weekly BTC DCA",
+    description: "Weekly DCA $100 into BTC",
+    status: "paused" as const,
+    frequency: "Weekly",
+    amount: "$100",
+    nextRun: "Paused",
+    limits: { daily: "$200" },
+    lastExecution: {
+      status: "success" as const,
+      timestamp: "14 days ago"
+    }
+  },
+  {
+    id: "rule_demo_4",
+    title: "EURC conversion",
+    description: "Convert USDC to EURC when EUR strengthens by 2%",
+    status: "needs_approval" as const,
+    frequency: "Price-based",
+    amount: "Dynamic",
+    nextRun: "Pending approval",
+    limits: { confirmOver: "$50" },
+    lastExecution: {
+      status: "pending" as const,
+      timestamp: "60 days ago"
+    }
   }
 ];
 
-export default async function RulesPage() {
-  const session = await getServerSession(authOptions);
-  const rules = session?.user?.id ? await getUserRules(session.user.id) : mockRules;
+export default function RulesPage() {
+  const [activeSegment, setActiveSegment] = useState<RuleSegment>("active");
+  
+  // Filter rules based on active segment
+  const filteredRules = mockRules.filter(rule => {
+    if (activeSegment === "active") return rule.status === "active";
+    if (activeSegment === "needs_approval") return rule.status === "needs_approval";
+    if (activeSegment === "paused") return rule.status === "paused";
+    return true;
+  });
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-background">
+    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom)+80px)] sm:pb-0">
+      {/* Mobile Header */}
+      <MobileHeader title="Rules" showAddRule={false} />
+      
+      {/* Desktop Header - Hidden on mobile */}
+      <div className="border-b border-border bg-background hidden sm:block">
         <div className="container-page">
           <div className="flex items-center justify-between py-8">
             <div>
@@ -136,117 +153,120 @@ export default async function RulesPage() {
         </div>
       </div>
 
-      <div className="container-page py-8">
-        {/* Demo Mode Banner */}
-        {!session?.user?.id && (
-          <div className="demo-banner mb-8">
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
-                <TestTube className="w-6 h-6 text-yellow-900" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-subheading text-yellow-900">Demo Mode - Sample Data</h3>
-                  <div className="px-3 py-1 bg-yellow-400/20 rounded-full">
-                    <span className="text-xs font-medium text-yellow-800">Safe Testing</span>
-                  </div>
-                </div>
-                <p className="text-body text-yellow-800 mb-4">
-                  These are example automation rules to showcase functionality. 
-                  <Link href="/auth/signup" className="font-medium hover:underline ml-1">
-                    Sign up
-                  </Link> to create your own rules and enable live transactions.
-                </p>
-                <div className="flex items-center space-x-2 text-body-small text-yellow-700">
-                  <Shield className="w-4 h-4" />
-                  <span>No real transactions • Sample data only • Always safe</span>
-                </div>
-              </div>
-            </div>
+      {/* Mobile Segmented Control */}
+      <div className="sm:hidden px-4 pt-4 pb-2">
+        <div className="bg-gray-100 rounded-xl p-1">
+          <div className="grid grid-cols-3 gap-1">
+            {segments.map((segment) => (
+              <button
+                key={segment.key}
+                onClick={() => setActiveSegment(segment.key)}
+                className={cn(
+                  "relative px-3 py-2 text-sm font-medium transition-all rounded-lg",
+                  activeSegment === segment.key
+                    ? "bg-white shadow-sm text-gray-900"
+                    : "text-gray-600 hover:text-gray-900"
+                )}
+              >
+                <span>{segment.label}</span>
+                {segment.count > 0 && (
+                  <span className={cn(
+                    "ml-2 px-2 py-0.5 text-xs rounded-full",
+                    activeSegment === segment.key
+                      ? "bg-primary text-white"
+                      : "bg-gray-300 text-gray-600"
+                  )}>
+                    {segment.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Rules Table */}
-        {rules.length > 0 ? (
-          <div className="card-modern overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-border bg-background-muted">
-                  <tr className="text-left">
-                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Rule</th>
-                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Status</th>
-                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Next Run</th>
-                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Performance</th>
-                    <th className="px-6 py-4 text-body-small font-medium text-foreground-muted">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rules.map((rule: any) => {
-                    const ruleData = rule.json as any;
-                    return (
-                      <tr key={rule.id} className="border-b border-border hover:bg-background-muted/50 transition-colors">
-                        <td className="px-6 py-6">
-                          <div className="space-y-2">
-                            <p className="text-body font-medium text-foreground">
-                              {ruleData?.description || `Rule ${rule.id.slice(0, 8)}`}
-                            </p>
-                            <div className="flex items-center gap-3">
-                              {rule.type === "schedule" ? (
-                                <Calendar className="w-4 h-4 text-foreground-muted" />
-                              ) : (
-                                <TrendingUp className="w-4 h-4 text-foreground-muted" />
-                              )}
-                              <span className="text-body-small text-foreground-muted capitalize font-medium">{rule.type}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-6">
-                          <StatusBadge status={rule.status} />
-                        </td>
-                        <td className="px-6 py-6">
-                          <div className="text-body text-foreground">
-                            {rule.type === "conditional" ? (
-                              <span className="text-foreground-muted font-medium">Monitoring</span>
-                            ) : rule.nextRunAt ? (
-                              <span className="font-medium">{formatDate(rule.nextRunAt.toISOString())}</span>
-                            ) : (
-                              <span className="text-foreground-muted font-medium">Not scheduled</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-6">
-                          <div className="space-y-1">
-                            <div className="text-body font-medium text-foreground">{rule.executionCount} executions</div>
-                            <div className="text-body-small text-foreground-muted">
-                              ${rule.totalFees.toFixed(2)} total fees
-                            </div>
-                            <div className="text-body-small text-foreground-muted">
-                              ${rule.avgFee.toFixed(3)} avg fee
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-6">
-                          <div className="flex items-center gap-2">
-                            <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
-                              {rule.status === "ACTIVE" ? (
-                                <Pause className="w-4 h-4" />
-                              ) : (
-                                <Play className="w-4 h-4" />
-                              )}
-                            </Button>
-                            <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+      {/* Mobile Rules List */}
+      <div className="sm:hidden px-4 pb-6">
+        <div className="space-y-3">
+          {filteredRules.map((rule) => (
+            <RuleCard
+              key={rule.id}
+              rule={rule}
+              variant="mobile"
+              onRun={(ruleId) => console.log("Run rule:", ruleId)}
+              onEdit={(ruleId) => console.log("Edit rule:", ruleId)}
+            />
+          ))}
+          
+          {filteredRules.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No {activeSegment.replace('_', ' ')} rules
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                {activeSegment === "active" && "Create your first automation rule to get started"}
+                {activeSegment === "needs_approval" && "No rules need approval at this time"}
+                {activeSegment === "paused" && "No paused rules to show"}
+              </p>
+              {activeSegment === "active" && (
+                <Button asChild className="btn-primary">
+                  <Link href="/rules/new">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Rule
+                  </Link>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Content */}
+      <div className="container-page py-8 hidden sm:block">
+        {/* Demo Mode Banner */}
+        <div className="demo-banner mb-8">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
+              <TestTube className="w-6 h-6 text-yellow-900" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-subheading text-yellow-900">Demo Mode - Sample Data</h3>
+                <div className="px-3 py-1 bg-yellow-400/20 rounded-full">
+                  <span className="text-xs font-medium text-yellow-800">Safe Testing</span>
+                </div>
+              </div>
+              <p className="text-body text-yellow-800 mb-4">
+                These are example automation rules to showcase functionality. 
+                <Link href="/auth/signup" className="font-medium hover:underline ml-1">
+                  Sign up
+                </Link> to create your own rules and enable live transactions.
+              </p>
+              <div className="flex items-center space-x-2 text-body-small text-yellow-700">
+                <Shield className="w-4 h-4" />
+                <span>No real transactions • Sample data only • Always safe</span>
+              </div>
             </div>
           </div>
-        ) : (
+        </div>
+
+        {/* Desktop Rules */}
+        <div className="space-y-4">
+          {mockRules.map((rule) => (
+            <RuleCard
+              key={rule.id}
+              rule={rule}
+              variant="desktop"
+              onRun={(ruleId) => console.log("Run rule:", ruleId)}
+              onEdit={(ruleId) => console.log("Edit rule:", ruleId)}
+            />
+          ))}
+        </div>
+        
+        {mockRules.length === 0 && (
           /* Empty State */
           <div className="card-modern p-16 text-center">
             <div className="w-16 h-16 bg-primary-light rounded-xl flex items-center justify-center mx-auto mb-6">
@@ -264,6 +284,19 @@ export default async function RulesPage() {
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Floating Action Button - Mobile Only */}
+      <div className="fixed bottom-20 right-4 z-30 sm:hidden">
+        <Button 
+          asChild 
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all"
+        >
+          <Link href="/rules/new">
+            <Plus className="w-6 h-6" />
+            <span className="sr-only">Create new rule</span>
+          </Link>
+        </Button>
       </div>
     </div>
   );
