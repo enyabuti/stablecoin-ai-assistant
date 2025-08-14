@@ -261,7 +261,7 @@ export default function DashboardPage() {
                       <Rocket className="w-4 h-4 text-primary" />
                       <span className="text-body-small font-medium text-primary">New Rule</span>
                     </div>
-                    <p className="text-body font-medium text-foreground">"{createdRule}"</p>
+                    <p className="text-body font-medium text-foreground">&ldquo;{createdRule}&rdquo;</p>
                   </div>
                   
                   <div className="flex flex-col gap-3">
@@ -436,7 +436,7 @@ export default function DashboardPage() {
           <div className="card-modern p-12 text-center bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
             <h2 className="text-heading text-foreground mb-4">Ready to Start Automating?</h2>
             <p className="text-body-large text-foreground-muted mb-8 max-w-xl mx-auto">
-              Join the future of crypto automation. Start with our demo mode and upgrade when you're ready.
+              Join the future of crypto automation. Start with our demo mode and upgrade when you&rsquo;re ready.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

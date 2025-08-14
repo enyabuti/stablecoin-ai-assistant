@@ -103,10 +103,6 @@ const config: Config = {
           foreground: "rgb(var(--secondary-foreground))",
           light: "rgb(var(--secondary-light))",
         },
-        accent: {
-          DEFAULT: "rgb(var(--accent))",
-          light: "rgb(var(--accent-light))",
-        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",

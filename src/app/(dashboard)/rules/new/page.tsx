@@ -269,7 +269,7 @@ export default function NewRulePage() {
             </div>
             <h3 className="text-heading text-foreground mb-4">Rule Created Successfully! 🎉</h3>
             <p className="text-body text-foreground-muted mb-8">
-              Your automation rule has been created and deployed to the blockchain. It's now active and monitoring for your specified conditions.
+              Your automation rule has been created and deployed to the blockchain. It&rsquo;s now active and monitoring for your specified conditions.
             </p>
             
             <div className="bg-green-50 rounded-2xl p-6 mb-8 border border-green-200">
