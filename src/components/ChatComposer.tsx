@@ -40,21 +40,17 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPRespon
     onInputChange?.("");
     setIsProcessing(true);
 
-    // If this is being used for rule parsing (legacy mode)
+    // If this is being used for rule parsing (use our new parsing system)
     if (onRuleParsed) {
       try {
-        const response = await fetch("/api/chat/parse", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage }),
-        });
+        // Use client-side parsing for demo mode
+        const { parseNlToRule } = await import('@/lib/llm/parse');
+        const response = await parseNlToRule(userMessage);
 
-        const data = await response.json();
-
-        if (data.error) {
-          onError?.(data.error);
-        } else if (data.rule) {
-          onRuleParsed(data.rule);
+        if (response.error) {
+          onError?.(response.error);
+        } else if (response.rule) {
+          onRuleParsed(response.rule);
         }
       } catch (error) {
         const errorMsg = "Failed to parse your request. Please try again.";

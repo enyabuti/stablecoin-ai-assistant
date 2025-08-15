@@ -1,118 +1,178 @@
-import type { Chain, RuleJSON, RouteQuote } from "@/lib/llm/schema";
-import type { GasOracle } from "@/lib/mocks/gasMock";
-import { MockGasOracle } from "@/lib/mocks/gasMock";
+import { Chain, RuleJSONT } from '../llm/schema';
 
-export interface Router {
-  getRouteQuotes(rule: RuleJSON): Promise<RouteQuote[]>;
-  getBestRoute(rule: RuleJSON): Promise<RouteQuote>;
+export interface Quote {
+  chain: Chain;
+  feeUsd: number;
+  feeEstimateUsd: number;
+  feePercentage?: number;
+  etaSeconds: number;
+  breakdown: {
+    gasUsd: number;
+    bridgeUsd: number;
+  };
+  savingsVsEthL1Usd: number;
+  usesCCTP?: boolean;
+  recommended?: boolean;
+  isHighFee?: boolean;
+  explanation: string;
 }
 
-export class MockRouter implements Router {
-  constructor(private gasOracle: GasOracle = new MockGasOracle()) {}
-  
-  async getRouteQuotes(rule: RuleJSON): Promise<RouteQuote[]> {
-    const { routing, asset, amount } = rule;
-    const estimates = await Promise.all(
-      routing.allowedChains.map(chain => 
-        this.gasOracle.estimateGas(chain, asset)
-      )
-    );
-    
-    const quotes = estimates.map(estimate => {
-      // Calculate fee percentage relative to transfer amount
-      const feePercentage = (estimate.feeUSD / amount.value) * 100;
-      const isHighFee = feePercentage > 2; // Flag fees over 2% of transfer amount
-      
-      return {
-        chain: estimate.chain,
-        feeEstimateUsd: estimate.feeUSD,
-        etaSeconds: estimate.etaSeconds,
-        explanation: estimate.explanation,
-        recommended: false,
-        feePercentage: Number(feePercentage.toFixed(2)),
-        isHighFee,
-      };
-    });
-    
-    // Enhanced sorting and recommendation logic
-    if (routing.mode === "cheapest") {
-      quotes.sort((a, b) => a.feeEstimateUsd - b.feeEstimateUsd);
-    } else if (routing.mode === "fastest") {
-      quotes.sort((a, b) => a.etaSeconds - b.etaSeconds);
-    } else if (routing.mode === "fixed") {
-      // Keep original order for fixed routing
-    }
-    
-    // Intelligent recommendation logic
-    this.applyRecommendations(quotes, amount.value);
-    
-    return quotes;
-  }
-  
-  async getBestRoute(rule: RuleJSON): Promise<RouteQuote> {
-    const quotes = await this.getRouteQuotes(rule);
-    const best = quotes.find(q => q.recommended) || quotes[0];
-    
-    if (!best) {
-      throw new Error("No valid routes found");
-    }
-    
-    return best;
-  }
-
-  private applyRecommendations(quotes: RouteQuote[], transferAmount: number): void {
-    if (quotes.length === 0) return;
-
-    // For small amounts (<$50), prioritize cheapest option
-    if (transferAmount < 50) {
-      const cheapest = quotes.reduce((min, quote) => 
-        quote.feeEstimateUsd < min.feeEstimateUsd ? quote : min
-      );
-      cheapest.recommended = true;
-      return;
-    }
-
-    // For medium amounts ($50-$500), balance cost and speed
-    if (transferAmount <= 500) {
-      // Find quotes with reasonable fees (< 1% of transfer)
-      const reasonableFees = quotes.filter(q => (q.feePercentage || 0) < 1);
-      
-      if (reasonableFees.length > 0) {
-        // Among reasonable fees, pick fastest
-        const fastest = reasonableFees.reduce((min, quote) => 
-          quote.etaSeconds < min.etaSeconds ? quote : min
-        );
-        fastest.recommended = true;
-      } else {
-        // If all fees are high, pick cheapest
-        quotes[0].recommended = true;
-      }
-      return;
-    }
-
-    // For large amounts (>$500), prioritize security and reasonable speed
-    // Prefer Ethereum for security, but warn about high fees
-    const ethereum = quotes.find(q => q.chain === "ethereum");
-    const cheapAlternatives = quotes.filter(q => 
-      q.chain !== "ethereum" && (q.feePercentage || 0) < 0.5
-    );
-
-    if (ethereum && (ethereum.feePercentage || 0) < 2) {
-      // If Ethereum fee is reasonable, recommend it for security
-      ethereum.recommended = true;
-    } else if (cheapAlternatives.length > 0) {
-      // Otherwise recommend fastest cheap alternative
-      const fastest = cheapAlternatives.reduce((min, quote) => 
-        quote.etaSeconds < min.etaSeconds ? quote : min
-      );
-      fastest.recommended = true;
-    } else {
-      // Fallback to cheapest option
-      quotes[0].recommended = true;
-    }
-  }
+interface FeatureFlags {
+  ENABLE_CCTP: boolean;
+  USE_MOCKS: boolean;
 }
 
-export function createRouter(): Router {
-  return new MockRouter();
+// Base gas costs per chain (deterministic mock data)
+const chainGasCosts = {
+  ethereum: { baseGasUsd: 15.0, speedMultiplier: 1.0, etaSeconds: 300 },
+  base: { baseGasUsd: 0.05, speedMultiplier: 0.2, etaSeconds: 30 },
+  arbitrum: { baseGasUsd: 0.8, speedMultiplier: 0.3, etaSeconds: 45 },
+  polygon: { baseGasUsd: 0.03, speedMultiplier: 0.4, etaSeconds: 60 }
+};
+
+// CCTP bridge costs (when enabled)
+const cctpCosts = {
+  ethereum: 2.0,
+  base: 0.1,
+  arbitrum: 0.3,
+  polygon: 0.15
+};
+
+export function quoteCheapest(rule: RuleJSONT, flags: FeatureFlags): Quote {
+  const routing = rule.routing || { mode: 'cheapest', allowedChains: ['base', 'arbitrum', 'polygon'] as Chain[] };
+  const { allowedChains, mode } = routing;
+  
+  // Handle both string and object amount formats
+  const amount = typeof rule.amount === 'string' 
+    ? parseFloat(rule.amount) 
+    : rule.amount.value;
+  
+  const quotes: Quote[] = allowedChains.map(chain => {
+    const chainCost = chainGasCosts[chain];
+    let gasUsd = chainCost.baseGasUsd;
+    let bridgeUsd = 0;
+    let usesCCTP = false;
+    
+    // Apply amount-based scaling (higher amounts = slightly higher gas)
+    gasUsd *= Math.max(1, Math.log10(amount / 10));
+    
+    // Add CCTP costs if enabled and beneficial
+    if (flags.ENABLE_CCTP && amount > 100) {
+      bridgeUsd = cctpCosts[chain];
+      usesCCTP = true;
+    }
+    
+    const totalFeeUsd = gasUsd + bridgeUsd;
+    const ethL1Cost = chainGasCosts.ethereum.baseGasUsd * Math.max(1, Math.log10(amount / 10));
+    const savingsVsEthL1Usd = Math.max(0, ethL1Cost - totalFeeUsd);
+    
+    const feePercentage = amount > 0 ? (totalFeeUsd / amount) * 100 : 0;
+    const isHighFee = feePercentage > 1; // Consider high if > 1% of amount
+    
+    // Generate explanation
+    const explanation = usesCCTP 
+      ? `${chain.charAt(0).toUpperCase() + chain.slice(1)} with CCTP for fast settlement`
+      : `${chain.charAt(0).toUpperCase() + chain.slice(1)} offers ${isHighFee ? 'higher' : 'competitive'} fees for this amount`;
+    
+    return {
+      chain,
+      feeUsd: Number(totalFeeUsd.toFixed(3)),
+      feeEstimateUsd: Number(totalFeeUsd.toFixed(3)),
+      feePercentage: Number(feePercentage.toFixed(2)),
+      etaSeconds: chainCost.etaSeconds,
+      breakdown: {
+        gasUsd: Number(gasUsd.toFixed(3)),
+        bridgeUsd: Number(bridgeUsd.toFixed(3))
+      },
+      savingsVsEthL1Usd: Number(savingsVsEthL1Usd.toFixed(2)),
+      usesCCTP,
+      recommended: false,
+      isHighFee,
+      explanation
+    };
+  });
+  
+  // Sort by criteria based on mode
+  let sortedQuotes: Quote[];
+  switch (mode) {
+    case 'fastest':
+      sortedQuotes = quotes.sort((a, b) => a.etaSeconds - b.etaSeconds);
+      break;
+    case 'cheapest':
+    default:
+      sortedQuotes = quotes.sort((a, b) => a.feeUsd - b.feeUsd);
+      break;
+  }
+  
+  // Mark the best option as recommended
+  if (sortedQuotes.length > 0) {
+    sortedQuotes[0].recommended = true;
+  }
+  
+  return sortedQuotes[0];
+}
+
+export function getAllQuotes(rule: RuleJSONT, flags: FeatureFlags): Quote[] {
+  const routing = rule.routing || { mode: 'cheapest', allowedChains: ['base', 'arbitrum', 'polygon'] as Chain[] };
+  const { allowedChains } = routing;
+  
+  // Handle both string and object amount formats
+  const amount = typeof rule.amount === 'string' 
+    ? parseFloat(rule.amount) 
+    : rule.amount.value;
+  
+  const quotes: Quote[] = allowedChains.map(chain => {
+    const chainCost = chainGasCosts[chain];
+    let gasUsd = chainCost.baseGasUsd;
+    let bridgeUsd = 0;
+    let usesCCTP = false;
+    
+    // Apply amount-based scaling (higher amounts = slightly higher gas)
+    gasUsd *= Math.max(1, Math.log10(amount / 10));
+    
+    // Add CCTP costs if enabled and beneficial
+    if (flags.ENABLE_CCTP && amount > 100) {
+      bridgeUsd = cctpCosts[chain];
+      usesCCTP = true;
+    }
+    
+    const totalFeeUsd = gasUsd + bridgeUsd;
+    const ethL1Cost = chainGasCosts.ethereum.baseGasUsd * Math.max(1, Math.log10(amount / 10));
+    const savingsVsEthL1Usd = Math.max(0, ethL1Cost - totalFeeUsd);
+    
+    const feePercentage = amount > 0 ? (totalFeeUsd / amount) * 100 : 0;
+    const isHighFee = feePercentage > 1; // Consider high if > 1% of amount
+    
+    // Generate explanation
+    const explanation = usesCCTP 
+      ? `${chain.charAt(0).toUpperCase() + chain.slice(1)} with CCTP for fast settlement`
+      : `${chain.charAt(0).toUpperCase() + chain.slice(1)} offers ${isHighFee ? 'higher' : 'competitive'} fees for this amount`;
+    
+    return {
+      chain,
+      feeUsd: Number(totalFeeUsd.toFixed(3)),
+      feeEstimateUsd: Number(totalFeeUsd.toFixed(3)),
+      feePercentage: Number(feePercentage.toFixed(2)),
+      etaSeconds: chainCost.etaSeconds,
+      breakdown: {
+        gasUsd: Number(gasUsd.toFixed(3)),
+        bridgeUsd: Number(bridgeUsd.toFixed(3))
+      },
+      savingsVsEthL1Usd: Number(savingsVsEthL1Usd.toFixed(2)),
+      usesCCTP,
+      recommended: false,
+      isHighFee,
+      explanation
+    };
+  });
+  
+  // Sort by fee
+  const sortedQuotes = quotes.sort((a, b) => a.feeUsd - b.feeUsd);
+  
+  // Mark the best option as recommended
+  if (sortedQuotes.length > 0) {
+    sortedQuotes[0].recommended = true;
+  }
+  
+  return sortedQuotes;
 }

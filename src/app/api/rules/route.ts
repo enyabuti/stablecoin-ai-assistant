@@ -3,10 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { RuleJSONSchema } from "@/lib/llm/schema";
-import { createRouter } from "@/lib/routing/router";
+import { getAllQuotes } from "@/lib/routing/router";
+import { getFeatureFlags } from "@/lib/featureFlags";
 import { nanoid } from "nanoid";
-
-const router = createRouter();
 
 // GET /api/rules - List all rules for user
 export async function GET(request: NextRequest) {
@@ -74,7 +73,8 @@ export async function POST(request: NextRequest) {
     });
     
     // Generate initial quote
-    const quotes = await router.getRouteQuotes(ruleJson);
+    const flags = getFeatureFlags();
+    const quotes = getAllQuotes(ruleJson, flags);
     
     // Save quotes to database
     await Promise.all(

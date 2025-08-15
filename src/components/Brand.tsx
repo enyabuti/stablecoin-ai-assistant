@@ -1,4 +1,5 @@
 // components/Brand.tsx
+import Image from 'next/image';
 import { APP_NAME, APP_TAGLINE } from "@/lib/appConfig";
 
 interface BrandProps {
@@ -22,9 +23,11 @@ export function Brand({ subtitle = false, size = "md", variant = "full" }: Brand
 
   if (variant === "icon") {
     return (
-      <img 
+      <Image 
         src="/brand/ferrow-icon.svg" 
         alt={APP_NAME} 
+        width={size === 'sm' ? 16 : size === 'md' ? 24 : 32}
+        height={size === 'sm' ? 16 : size === 'md' ? 24 : 32}
         className={sizeClasses[size]} 
       />
     );
@@ -41,9 +44,11 @@ export function Brand({ subtitle = false, size = "md", variant = "full" }: Brand
 
   return (
     <div className="flex items-center gap-2">
-      <img 
+      <Image 
         src="/brand/ferrow-icon.svg" 
         alt={APP_NAME} 
+        width={size === 'sm' ? 16 : size === 'md' ? 24 : 32}
+        height={size === 'sm' ? 16 : size === 'md' ? 24 : 32}
         className={sizeClasses[size]} 
       />
       <div className="flex flex-col leading-tight">

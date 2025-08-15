@@ -1,66 +1,73 @@
 import { z } from "zod";
 
-export const ChainSchema = z.enum(["ethereum", "base", "arbitrum", "polygon"]);
-export type Chain = z.infer<typeof ChainSchema>;
+export type Chain = 'ethereum' | 'base' | 'arbitrum' | 'polygon';
+
+export const ChainSchema = z.enum(['ethereum', 'base', 'arbitrum', 'polygon']);
 
 export const RuleJSONSchema = z.object({
-  type: z.enum(["schedule", "conditional"]),
+  type: z.enum(['schedule', 'conditional']),
   description: z.string().optional(),
-  asset: z.enum(["USDC", "EURC"]),
-  amount: z.object({
-    type: z.literal("fixed"),
-    value: z.number().positive(),
-    currency: z.enum(["USD", "EUR"]),
-  }),
-  destination: z.object({
-    type: z.enum(["address", "contact"]),
-    value: z.string().min(1),
-  }),
-  schedule: z
-    .object({
-      cron: z.string(),
-      tz: z.string().default("UTC"),
+  asset: z.enum(['USDC', 'EURC']),
+  amount: z.union([
+    z.string(),
+    z.object({ 
+      type: z.literal('fixed'), 
+      value: z.number().positive(), 
+      currency: z.enum(['USD', 'EUR']) 
     })
-    .optional(),
-  condition: z
-    .object({
-      metric: z.enum(["EURUSD"]),
-      change: z.enum(["+%", "-%"]),
-      magnitude: z.number().positive(),
-      window: z.enum(["24h"]),
+  ]),
+  destination: z.union([
+    z.string(),
+    z.object({ 
+      type: z.enum(['address', 'contact']), 
+      value: z.string().min(2) 
     })
-    .optional(),
-  routing: z.object({
-    mode: z.enum(["cheapest", "fastest", "fixed"]),
-    allowedChains: z.array(ChainSchema).min(1),
-  }),
-  limits: z.object({
-    dailyMaxUSD: z.number().positive(),
-    requireConfirmOverUSD: z.number().positive(),
-  }),
+  ]),
+  fromChain: ChainSchema.optional(),
+  toChain: ChainSchema.optional(),
+  schedule: z.object({ 
+    frequency: z.enum(['daily', 'weekly', 'monthly', 'once']).optional(),
+    cron: z.string().optional(), 
+    tz: z.string().default('UTC'),
+    startDate: z.string().optional(),
+    dayOfWeek: z.number().min(0).max(6).optional(),
+    dayOfMonth: z.number().min(1).max(31).optional()
+  }).optional(),
+  condition: z.object({ 
+    type: z.enum(['price']).optional(),
+    asset: z.string().optional(),
+    metric: z.literal('EURUSD').optional(), 
+    change: z.enum(['+%', '-%']).optional(), 
+    operator: z.enum(['gt', 'lt', 'gte', 'lte']).optional(),
+    threshold: z.number().optional(),
+    magnitude: z.number().positive().optional(), 
+    window: z.literal('24h').optional() 
+  }).optional(),
+  routing: z.object({ 
+    mode: z.enum(['cheapest', 'fastest', 'fixed']), 
+    allowedChains: z.array(ChainSchema).min(1) 
+  }).optional(),
+  limits: z.object({ 
+    dailyMaxUSD: z.number().positive(), 
+    requireConfirmOverUSD: z.number().positive() 
+  }).optional()
 });
 
-export type RuleJSON = z.infer<typeof RuleJSONSchema>;
+export type RuleJSONT = z.infer<typeof RuleJSONSchema>;
 
-// Gas estimation schema
-export const GasEstimateSchema = z.object({
-  chain: ChainSchema,
-  feeUSD: z.number().positive(),
-  etaSeconds: z.number().positive(),
-  explanation: z.string(),
-});
-
-export type GasEstimate = z.infer<typeof GasEstimateSchema>;
-
-// Route quote schema  
+// Quote and RouteQuote schemas
 export const RouteQuoteSchema = z.object({
   chain: ChainSchema,
-  feeEstimateUsd: z.number().positive(),
-  etaSeconds: z.number().positive(),
-  explanation: z.string(),
-  recommended: z.boolean().default(false),
+  feeEstimateUsd: z.number(),
   feePercentage: z.number().optional(),
-  isHighFee: z.boolean().optional(),
+  etaSeconds: z.number(),
+  recommended: z.boolean().default(false),
+  isHighFee: z.boolean().default(false),
+  explanation: z.string()
 });
 
 export type RouteQuote = z.infer<typeof RouteQuoteSchema>;
+
+// Legacy compatibility
+export const RuleJSON = RuleJSONSchema;
+export type RuleJSON = RuleJSONT;
