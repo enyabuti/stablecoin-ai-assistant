@@ -99,7 +99,7 @@ export class ConditionChecker {
     
     if (condition.metric === "EURUSD") {
       const currentRate = this.getFxRate("EURUSD");
-      const previousRate = this.getPreviousRate("EURUSD", condition.window);
+      const previousRate = this.getPreviousRate("EURUSD", condition.window || "24h");
       
       if (!currentRate || !previousRate) {
         console.warn(`Missing FX data for ${condition.metric}`);
@@ -118,11 +118,11 @@ export class ConditionChecker {
       });
 
       // Check if condition is met
-      if (condition.change === "+%" && changePercent >= condition.magnitude) {
+      if (condition.change === "+%" && condition.magnitude && changePercent >= condition.magnitude) {
         return true;
       }
       
-      if (condition.change === "-%" && changePercent <= -condition.magnitude) {
+      if (condition.change === "-%" && condition.magnitude && changePercent <= -condition.magnitude) {
         return true;
       }
     }

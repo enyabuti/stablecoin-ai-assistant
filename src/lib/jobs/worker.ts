@@ -1,7 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { db } from "@/lib/db";
 import { connection, ExecuteRuleJob, CheckConditionsJob } from "./queue";
-import { createRouter } from "@/lib/routing/router";
+import { quoteCheapest } from "@/lib/routing/router";
 import { MockCircleClient } from "@/lib/mocks/circleMock";
 import { conditionChecker } from "./conditionChecker";
 // import { auditLogger } from "@/lib/audit/auditLogger";
@@ -11,7 +11,6 @@ import { nanoid } from "nanoid";
 import type { RuleJSON } from "@/lib/llm/schema";
 
 // Initialize dependencies
-const router = createRouter();
 const circleClient = new MockCircleClient();
 
 // Extracted job processing logic for fallback execution
@@ -50,7 +49,7 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
       });
       
       // Get best route quote
-      const bestRoute = await router.getBestRoute(ruleJson);
+      const bestRoute = quoteCheapest(ruleJson, { ENABLE_CCTP: true, USE_MOCKS: true });
       
       // Update execution with route info
       await db.execution.update({
@@ -85,19 +84,19 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
       }
       
       // Resolve and validate destination address
-      let destinationAddress = ruleJson.destination.value;
-      if (ruleJson.destination.type === "contact") {
+      let destinationAddress = typeof ruleJson.destination === 'string' ? ruleJson.destination : ruleJson.destination.value;
+      if (typeof ruleJson.destination === 'object' && ruleJson.destination.type === "contact") {
         const contact = await db.contact.findUnique({
           where: {
             userId_name: {
               userId: rule.userId,
-              name: ruleJson.destination.value,
+              name: typeof ruleJson.destination === 'object' ? ruleJson.destination.value : ruleJson.destination,
             },
           },
         });
         
         if (!contact) {
-          throw new Error(`Contact '${ruleJson.destination.value}' not found`);
+          throw new Error(`Contact '${typeof ruleJson.destination === 'object' ? ruleJson.destination.value : ruleJson.destination}' not found`);
         }
         
         destinationAddress = contact.address;
@@ -111,7 +110,9 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
       // Get fresh wallet balance before transfer
       const freshWallet = await circleClient.refreshWalletBalance(wallet.circleWalletId!);
       const usdcBalance = parseFloat(freshWallet.balances.find(b => b.currency === "USDC")?.amount || "0");
-      const transferAmount = parseFloat(ruleJson.amount.value.toString());
+      const transferAmount = typeof ruleJson.amount === 'string' 
+        ? parseFloat(ruleJson.amount) 
+        : parseFloat(ruleJson.amount.value.toString());
       
       // Safety check: ensure sufficient balance (with buffer for fees)
       const estimatedFee = bestRoute.feeEstimateUsd;
@@ -127,7 +128,7 @@ export async function processExecuteRuleJob(data: ExecuteRuleJob) {
       const transfer = await circleClient.transferUSDC({
         walletId: wallet.circleWalletId!,
         destinationAddress,
-        amount: ruleJson.amount.value.toString(),
+        amount: typeof ruleJson.amount === 'string' ? ruleJson.amount : ruleJson.amount.value.toString(),
         chain: bestRoute.chain,
         idempotencyKey: `${idempotencyKey}-transfer`,
       });

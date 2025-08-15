@@ -1,4 +1,11 @@
-import type { Chain, GasEstimate } from "@/lib/llm/schema";
+import type { Chain } from "@/lib/llm/schema";
+
+interface GasEstimate {
+  chain: Chain;
+  feeUSD: number;
+  etaSeconds: number;
+  explanation: string;
+}
 import { getChainConfig } from "@/lib/routing/chains";
 
 export interface GasOracle {

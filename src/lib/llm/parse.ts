@@ -1,4 +1,4 @@
-import { RuleJSONT, RuleJSONSchema } from './schema';
+import { RuleJSONT, RuleJSONSchema, Chain } from './schema';
 
 interface ParseResult {
   success: true;
@@ -86,7 +86,8 @@ export async function parseNlToRule(input: string): Promise<ParseResponse> {
       return {
         success: false,
         need: 'amount',
-        message: 'Please specify an amount like "$50" or "€100"'
+        message: 'Please specify an amount like "$50" or "€100"',
+        error: 'Amount not found'
       };
     }
     
@@ -133,9 +134,9 @@ export async function parseNlToRule(input: string): Promise<ParseResponse> {
       for (const schedPattern of phrasePatterns.schedule) {
         const match = normalizedInput.match(schedPattern.pattern);
         if (match) {
-          if ('extract' in schedPattern) {
+          if ('extract' in schedPattern && schedPattern.extract) {
             cron = schedPattern.extract(match[0]);
-          } else {
+          } else if ('cron' in schedPattern) {
             cron = schedPattern.cron;
           }
           break;
@@ -173,9 +174,12 @@ export async function parseNlToRule(input: string): Promise<ParseResponse> {
     }
     
     // Extract routing
-    let routing = {
-      mode: 'cheapest' as const,
-      allowedChains: ['base', 'arbitrum', 'polygon'] as const
+    let routing: {
+      mode: 'cheapest' | 'fastest' | 'fixed';
+      allowedChains: Chain[];
+    } = {
+      mode: 'cheapest',
+      allowedChains: ['base', 'arbitrum', 'polygon'] as Chain[]
     };
     
     for (const routePattern of phrasePatterns.routing) {
@@ -185,7 +189,7 @@ export async function parseNlToRule(input: string): Promise<ParseResponse> {
           const chainMatch = normalizedInput.match(routePattern.pattern);
           if (chainMatch) {
             const chain = routePattern.chain!(chainMatch[0]);
-            routing.allowedChains = [chain] as any;
+            routing.allowedChains = [chain as Chain];
           }
         }
         break;

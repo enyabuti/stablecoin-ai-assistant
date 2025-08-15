@@ -61,7 +61,9 @@ export class SafetyGuardrails {
     }
 
     // Check 2: Transfer amount limits
-    const transferAmount = parseFloat(ruleData.amount.value.toString());
+    const transferAmount = typeof ruleData.amount === 'string'
+      ? parseFloat(ruleData.amount)
+      : parseFloat(ruleData.amount.value.toString());
     if (transferAmount > this.DEFAULT_LIMITS.maxSingleTransfer) {
       return {
         passed: false,
@@ -99,7 +101,9 @@ export class SafetyGuardrails {
     }
 
     // Check 4: Validate destination addresses
-    if (!this.isValidAddress(ruleData.destination.value, ruleData.destination.type)) {
+    const destination = typeof ruleData.destination === 'string' ? ruleData.destination : ruleData.destination.value;
+    const destType = typeof ruleData.destination === 'string' ? 'address' : ruleData.destination.type;
+    if (!this.isValidAddress(destination, destType)) {
       return {
         passed: false,
         reason: "Invalid destination address format",

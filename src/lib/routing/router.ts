@@ -12,8 +12,8 @@ export interface Quote {
   };
   savingsVsEthL1Usd: number;
   usesCCTP?: boolean;
-  recommended?: boolean;
-  isHighFee?: boolean;
+  recommended: boolean;
+  isHighFee: boolean;
   explanation: string;
 }
 

@@ -47,9 +47,9 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPRespon
         const { parseNlToRule } = await import('@/lib/llm/parse');
         const response = await parseNlToRule(userMessage);
 
-        if (response.error) {
+        if (!response.success) {
           onError?.(response.error);
-        } else if (response.rule) {
+        } else {
           onRuleParsed(response.rule);
         }
       } catch (error) {
@@ -122,6 +122,9 @@ export function ChatComposer({ onSendMessage, onRuleParsed, onError, onMCPRespon
               }
             }}
           />
+
+
+          
           
           {/* Voice Input Button */}
           <Button

@@ -22,7 +22,7 @@ Avatar.displayName = "Avatar";
 const AvatarImage = React.forwardRef<
   HTMLImageElement,
   React.ImgHTMLAttributes<HTMLImageElement> & { src?: string }
->(({ className, alt = "", src, ...props }, ref) => (
+>(({ className, alt = "", src, width, height, ...props }, ref) => (
   <Image
     ref={ref}
     src={src || '/placeholder-avatar.png'}

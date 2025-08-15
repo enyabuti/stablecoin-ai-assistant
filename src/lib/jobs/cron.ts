@@ -99,6 +99,8 @@ export class CronScheduler {
           const cronExpression = ruleJson.schedule.cron;
           const timezone = ruleJson.schedule.tz || "UTC";
           
+          if (!cronExpression) continue;
+          
           // Parse cron expression
           const interval = cronParser.parseExpression(cronExpression, {
             currentDate: rule.nextRunAt || now,

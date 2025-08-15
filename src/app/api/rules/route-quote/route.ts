@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { RuleJSONSchema } from '@/lib/llm/schema';
+import { RuleJSONSchema, Chain } from '@/lib/llm/schema';
 import { quoteCheapest } from '@/lib/routing/router';
 import { getFeatureFlags } from '@/lib/featureFlags';
 
@@ -27,13 +27,16 @@ export async function POST(request: NextRequest) {
         type: 'schedule' as const,
         asset: 'USDC' as const,
         amount: '100.00',
-        fromChain: 'ethereum',
-        toChain: 'polygon',
         destination: '0x742d35Cc6634C0532925a3b8D4034DfC037D7d6d',
         schedule: {
-          frequency: 'weekly',
+          frequency: 'weekly' as const,
           startDate: new Date().toISOString(),
-          dayOfWeek: 1
+          dayOfWeek: 1,
+          tz: 'UTC'
+        },
+        routing: {
+          mode: 'cheapest' as const,
+          allowedChains: ['base', 'arbitrum', 'polygon'] as Chain[]
         },
         description: `Mock rule for ID: ${ruleId}`
       };
