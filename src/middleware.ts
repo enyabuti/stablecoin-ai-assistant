@@ -35,11 +35,8 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/rules/:path*", 
-    "/transfers/:path*",
-    "/settings/:path*",
-    "/profile/:path*",
-    "/account/:path*"
+    // Apply middleware only to UI routes, exclude API routes completely
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/dashboard/:path*"
   ]
 };
