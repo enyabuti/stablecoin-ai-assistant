@@ -192,6 +192,16 @@ class MonitoringService {
     today.setHours(0, 0, 0, 0);
 
     try {
+      // Skip database queries during build time
+      if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return {
+          activeRules: 0,
+          executionsToday: 0,
+          totalVolumeUSD: 0,
+          successRate: 100
+        };
+      }
+
       const [activeRules, todayExecutions, allExecutions] = await Promise.all([
         db.rule.count({ where: { status: 'ACTIVE' } }),
         db.execution.findMany({
