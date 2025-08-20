@@ -1,6 +1,6 @@
 import { Worker, Job } from "bullmq";
 import { db } from "@/lib/db";
-import { connection, ExecuteRuleJob, CheckConditionsJob } from "./queue";
+import { connection, ExecuteRuleJob, CheckConditionsJob, handleFailedJob } from "./queue";
 import { quoteCheapest } from "@/lib/routing/router";
 import { MockCircleClient } from "@/lib/mocks/circleMock";
 import { conditionChecker } from "./conditionChecker";
@@ -281,14 +281,41 @@ export function startWorkers() {
       console.log(`Execute rule job ${job.id} completed:`, job.returnvalue);
     });
     
-    executeRuleWorker.on("failed", (job, err) => {
+    executeRuleWorker.on("failed", async (job, err) => {
       console.error(`Execute rule job ${job?.id} failed:`, err);
+      
+      if (job) {
+        await handleFailedJob(
+          "execute-rule",
+          job.data,
+          err,
+          job.attemptsMade,
+          {
+            userId: job.data.userId,
+            ruleId: job.data.ruleId,
+            executionId: job.data.idempotencyKey
+          }
+        );
+      }
     });
   }
   
   if (conditionCheckWorker) {
     conditionCheckWorker.on("completed", (job) => {
       console.log(`Condition check completed:`, job.returnvalue);
+    });
+    
+    conditionCheckWorker.on("failed", async (job, err) => {
+      console.error(`Condition check job ${job?.id} failed:`, err);
+      
+      if (job) {
+        await handleFailedJob(
+          "condition-check",
+          job.data,
+          err,
+          job.attemptsMade
+        );
+      }
     });
   }
   

@@ -1,10 +1,12 @@
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
 import { env } from "@/lib/env";
+import { createDLQ } from "./dlq";
 
 // Graceful Redis connection with fallback handling
 let connection: IORedis | null = null;
 let isRedisAvailable = false;
+let dlq: ReturnType<typeof createDLQ> | null = null;
 
 // Skip Redis initialization during build time
 if (process.env.NEXT_PHASE !== 'phase-production-build') {
@@ -18,6 +20,12 @@ if (process.env.NEXT_PHASE !== 'phase-production-build') {
     connection.on('connect', () => {
       console.log('Redis connected successfully');
       isRedisAvailable = true;
+      
+      // Initialize DLQ when Redis is connected
+      if (!dlq) {
+        dlq = createDLQ(connection!);
+        dlq.scheduleCleanup().catch(console.error);
+      }
     });
 
     connection.on('error', (error) => {
@@ -157,6 +165,30 @@ export function getQueueStatus() {
     inMemoryJobs: inMemoryJobs.size,
     fallbackMode: !isRedisAvailable
   };
+}
+
+// Helper function to handle failed jobs
+export async function handleFailedJob(
+  queueName: string,
+  jobData: any,
+  error: Error,
+  attempts: number,
+  metadata: { userId?: string; ruleId?: string; executionId?: string } = {}
+) {
+  if (dlq && isRedisAvailable) {
+    try {
+      await dlq.addToDLQ(queueName, jobData, error, attempts, metadata);
+    } catch (dlqError) {
+      console.error('Failed to add job to DLQ:', dlqError);
+    }
+  } else {
+    console.error(`Failed job (no DLQ available): ${queueName}`, { jobData, error: error.message, attempts });
+  }
+}
+
+// Export DLQ for access from other modules
+export function getDLQInstance() {
+  return dlq;
 }
 
 export { connection };
