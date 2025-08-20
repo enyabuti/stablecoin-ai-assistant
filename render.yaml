@@ -3,7 +3,7 @@ services:
     name: ferrow-enhanced
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npx prisma generate && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -12,4 +12,6 @@ services:
         generateValue: true
       - key: NEXTAUTH_URL
         value: https://ferrow-enhanced.onrender.com
+      - key: DATABASE_URL
+        value: postgresql://username:password@hostname:5432/database
     healthCheckPath: /api/health
