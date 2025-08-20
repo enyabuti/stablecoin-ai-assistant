@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ferrow-enhanced
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        value: https://ferrow-enhanced.onrender.com
+    healthCheckPath: /api/health
