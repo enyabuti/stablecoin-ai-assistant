@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Menu, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -10,7 +10,11 @@ interface MobileHeaderProps {
   title?: string;
   showSearch?: boolean;
   showAddRule?: boolean;
+  showBack?: boolean;
+  showMenu?: boolean;
   onSearch?: () => void;
+  onBack?: () => void;
+  onMenuToggle?: () => void;
   className?: string;
 }
 
@@ -18,7 +22,11 @@ export function MobileHeader({
   title = "Ferrow",
   showSearch = false,
   showAddRule = true,
+  showBack = false,
+  showMenu = false,
   onSearch,
+  onBack,
+  onMenuToggle,
   className
 }: MobileHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,8 +47,33 @@ export function MobileHeader({
       className
     )}>
       <div className="flex items-center justify-between h-14 px-4">
-        {/* Left side: Title */}
-        <div className="flex items-center">
+        {/* Left side: Back button or Menu + Title */}
+        <div className="flex items-center space-x-3 flex-1">
+          {showBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-8 h-8 p-0"
+              onClick={onBack}
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {showMenu && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-8 h-8 p-0"
+              onClick={onMenuToggle}
+              aria-label="Open menu"
+              data-testid="mobile-menu-button"
+            >
+              <Menu className="w-4 h-4" />
+            </Button>
+          )}
+          
           <h1 className="text-lg font-semibold text-gray-900 truncate">
             {title}
           </h1>
@@ -54,9 +87,10 @@ export function MobileHeader({
               size="sm"
               className="w-8 h-8 p-0"
               onClick={onSearch}
+              aria-label="Search"
+              data-testid="search-button"
             >
               <Search className="w-4 h-4" />
-              <span className="sr-only">Search</span>
             </Button>
           )}
           
@@ -64,11 +98,12 @@ export function MobileHeader({
             <Button
               asChild
               size="sm"
-              className="bg-gradient-to-r from-primary to-accent text-white shadow-sm hover:shadow-md transition-all"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-sm hover:shadow-md transition-all rounded-xl"
+              aria-label="Create new rule"
             >
               <Link href="/rules/new">
                 <Plus className="w-4 h-4 mr-1" />
-                Rule
+                <span className="hidden xs:inline">Rule</span>
               </Link>
             </Button>
           )}

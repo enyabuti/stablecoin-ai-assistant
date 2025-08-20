@@ -6,15 +6,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingSpinner } from "@/components/ui/loading";
 import { Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/appConfig";
 
 function SignInForm() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,9 +32,29 @@ function SignInForm() {
     }
   }, [searchParams]);
 
+  const validateForm = () => {
+    let isValid = true;
+    setEmailError("");
+    setPasswordError("");
+    setError("");
+
+    if (!email) {
+      setEmailError("Email is required");
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError("Please enter a valid email address");
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    
+    if (!validateForm()) {
+      return;
+    }
 
     setIsLoading(true);
     setError("");
@@ -107,7 +132,7 @@ function SignInForm() {
               <Mail className="w-8 h-8 text-primary" />
             </div>
             <CardTitle className="text-heading text-foreground">
-              {mode === "signup" ? "Create Account" : "Welcome Back"}
+              <h1>{mode === "signup" ? "Create Account" : "Sign in to Ferrow"}</h1>
             </CardTitle>
             <p className="text-body text-foreground-muted">
               {mode === "signup" 
@@ -131,6 +156,7 @@ function SignInForm() {
                   signIn("google", { callbackUrl: "/dashboard" });
                 }}
                 disabled={isLoading}
+                aria-label="Continue with Google"
                 className="w-full relative bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-xl py-3 px-4 flex items-center justify-center gap-3 text-body font-medium transition-all duration-200 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -155,19 +181,33 @@ function SignInForm() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email address
+                </label>
                 <Input
+                  id="email"
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError("");
+                  }}
                   required
-                  className="input-modern"
+                  className={`input-modern ${emailError ? 'border-red-500 focus:ring-red-500' : ''}`}
                   disabled={isLoading}
+                  aria-invalid={emailError ? 'true' : 'false'}
+                  aria-describedby={emailError ? 'email-error' : undefined}
                 />
+                {emailError && (
+                  <p id="email-error" className="mt-1 text-sm text-red-600" data-testid="email-error">
+                    {emailError}
+                  </p>
+                )}
               </div>
               
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg" role="alert" data-testid="error-message">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
@@ -178,7 +218,7 @@ function SignInForm() {
                 disabled={isLoading || !email}
               >
                 {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  <LoadingSpinner size="sm" className="mr-2 border-white border-t-white/30" />
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
                 )}
