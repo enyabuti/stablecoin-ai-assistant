@@ -3,6 +3,9 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client", "prisma", "bullmq", "ioredis"]
   },
+  // Skip static generation during build for problematic routes
+  trailingSlash: false,
+  skipMiddlewareUrlNormalize: true,
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL
   },
@@ -18,10 +21,15 @@ const nextConfig = {
       return 'vercel-build-' + Date.now()
     }
   }),
-  // Reduce build memory usage
-  webpack: (config, { isServer }) => {
+  // Reduce build memory usage and exclude problematic packages
+  webpack: (config, { isServer, webpack }) => {
     if (isServer) {
-      config.externals.push('@sentry/nextjs');
+      // Exclude packages that cause build issues in server environment
+      config.externals.push(
+        '@sentry/nextjs',
+        '@sentry/utils',
+        '@opentelemetry/api'
+      );
     }
     
     // Optimize bundle size

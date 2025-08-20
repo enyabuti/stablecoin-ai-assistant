@@ -33,6 +33,9 @@ export function PWAInstaller() {
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
+    
     // Register service worker
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       navigator.serviceWorker
@@ -73,18 +76,22 @@ export function PWAInstaller() {
       setDeferredPrompt(null);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || 
-        (window.navigator as any).standalone) {
-      setIsInstalled(true);
+      // Check if already installed
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          (window.navigator as any).standalone) {
+        setIsInstalled(true);
+      }
     }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener('appinstalled', handleAppInstalled);
+      }
     };
   }, []);
 
