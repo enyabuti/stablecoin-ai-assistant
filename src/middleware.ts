@@ -1,20 +1,12 @@
-// Simplified middleware for deployment compatibility
+// Completely disabled middleware for Render.com troubleshooting
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Skip middleware for deployment environments to avoid NextAuth issues
-  if (process.env.RENDER || process.env.NODE_ENV === 'production') {
-    return NextResponse.next();
-  }
-  
-  // In development, we can use more complex auth logic
+  // Completely bypass all middleware logic for deployment troubleshooting
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    // Only apply to routes that need protection (minimal for deployment)
-    "/((?!api|_next/static|_next/image|favicon.ico|test-minimal).*)"
-  ]
+  matcher: []  // Empty matcher = no routes processed
 };
