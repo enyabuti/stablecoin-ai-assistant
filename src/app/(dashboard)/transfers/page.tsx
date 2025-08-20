@@ -366,7 +366,12 @@ export default function TransfersPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <Card className="glass-card">
+          <Card 
+            className={`glass-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              filters.status.length === 0 ? 'ring-2 ring-primary/30' : ''
+            }`}
+            onClick={() => setFilters(prev => ({ ...prev, status: [] }))}
+          >
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
                 <ArrowLeftRight className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
@@ -378,7 +383,15 @@ export default function TransfersPage() {
             </CardContent>
           </Card>
         
-          <Card className="glass-card">
+          <Card 
+            className={`glass-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              filters.status.includes('COMPLETED') ? 'ring-2 ring-success/50' : ''
+            }`}
+            onClick={() => setFilters(prev => ({ 
+              ...prev, 
+              status: prev.status.includes('COMPLETED') ? [] : ['COMPLETED'] 
+            }))}
+          >
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-success/20 rounded-xl flex items-center justify-center">
@@ -392,7 +405,17 @@ export default function TransfersPage() {
             </CardContent>
           </Card>
         
-          <Card className="glass-card">
+          <Card 
+            className={`glass-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              filters.status.includes('PENDING') || filters.status.includes('PROCESSING') ? 'ring-2 ring-amber-500/50' : ''
+            }`}
+            onClick={() => setFilters(prev => ({ 
+              ...prev, 
+              status: prev.status.includes('PENDING') || prev.status.includes('PROCESSING') 
+                ? [] 
+                : ['PENDING', 'PROCESSING'] 
+            }))}
+          >
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-amber-500/20 rounded-xl flex items-center justify-center">
@@ -406,7 +429,15 @@ export default function TransfersPage() {
             </CardContent>
           </Card>
         
-          <Card className="glass-card">
+          <Card 
+            className={`glass-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              filters.status.includes('FAILED') ? 'ring-2 ring-danger/50' : ''
+            }`}
+            onClick={() => setFilters(prev => ({ 
+              ...prev, 
+              status: prev.status.includes('FAILED') ? [] : ['FAILED'] 
+            }))}
+          >
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-danger/20 rounded-xl flex items-center justify-center">

@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    // Allow demo usage without authentication in development
+    if (process.env.NODE_ENV !== 'development' && !session?.user?.id) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
