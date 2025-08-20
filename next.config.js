@@ -28,8 +28,19 @@ const nextConfig = {
       config.externals.push('@sentry/nextjs');
     }
     
+    // Exclude test files from build
+    config.module.rules.push({
+      test: /\.(test|spec)\.(ts|tsx|js|jsx)$/,
+      loader: 'ignore-loader'
+    });
+    
     return config;
   },
+  
+  // Exclude test directories from page compilation
+  pageExtensions: ['page.tsx', 'page.ts', 'tsx', 'ts', 'jsx', 'js'].filter(ext => 
+    !ext.includes('test') && !ext.includes('spec')
+  ),
 };
 
 module.exports = nextConfig;

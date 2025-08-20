@@ -1,5 +1,4 @@
-#!/usr/bin/env ts-node
-
+// Test runner for comprehensive testing suite
 import { execSync } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
