@@ -21,6 +21,27 @@ import {
 import { getChainConfig } from "@/lib/routing/chains";
 
 async function getUserData(userId: string) {
+  // Skip database queries during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    const mockData = {
+      user: { email: 'build@example.com', createdAt: new Date() },
+      rules: [],
+      executions: [],
+      wallets: []
+    };
+    
+    const stats = {
+      totalRules: 0,
+      activeRules: 0,
+      totalExecutions: 0,
+      successfulExecutions: 0,
+      totalFees: 0,
+      connectedChains: 0,
+    };
+    
+    return { ...mockData, stats };
+  }
+
   const [user, rules, executions, wallets] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },

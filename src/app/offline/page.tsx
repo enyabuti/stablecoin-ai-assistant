@@ -5,6 +5,8 @@
  * that's not in the service worker cache.
  */
 
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
@@ -71,8 +73,4 @@ export default function OfflinePage() {
   );
 }
 
-export const metadata = {
-  title: 'Offline - Ferrow',
-  description: 'You are currently offline',
-  robots: 'noindex, nofollow'
-};
+// Metadata moved to layout since this is now a client component

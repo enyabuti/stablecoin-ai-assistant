@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: APP_TAGLINE,
   applicationName: APP_NAME,
-  manifest: "/manifest.json",
+  // manifest: "/manifest.json", // Temporarily disabled for build
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

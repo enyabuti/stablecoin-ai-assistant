@@ -21,7 +21,7 @@ const nextConfig = {
       return 'vercel-build-' + Date.now()
     }
   }),
-  // Reduce build memory usage and exclude problematic packages
+  // Reduce build memory usage and fix global issues
   webpack: (config, { isServer, webpack }) => {
     if (isServer) {
       // Exclude packages that cause build issues in server environment
@@ -30,19 +30,33 @@ const nextConfig = {
         '@sentry/utils',
         '@opentelemetry/api'
       );
+      
+      // Define globals that are expected by browser-only code
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          'self': 'undefined',
+          'window': 'undefined',
+        })
+      );
     }
     
-    // Optimize bundle size
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
+    // Disable webpack runtime optimization for server to prevent self references
+    if (isServer) {
+      config.optimization.runtimeChunk = false;
+      config.optimization.splitChunks = false;
+    } else {
+      // Only optimize for client-side bundle
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
         },
-      },
-    };
+      };
+    }
     
     return config;
   },
