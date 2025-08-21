@@ -14,4 +14,7 @@ services:
         value: https://ferrow-enhanced.onrender.com
       - key: DATABASE_URL
         value: postgresql://username:password@hostname:5432/database
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
     healthCheckPath: /api/health
+    # Updated for enhanced UI deployment with Playwright MCP testing framework
